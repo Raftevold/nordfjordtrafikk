@@ -1,5 +1,12 @@
-# Render Blueprint – opprettar webtenesta og databasen automatisk.
+# Render Blueprint – opprettar webtenesta automatisk.
 # Dashboard → New → Blueprint → vel dette repoet.
+#
+# MERK om database: Render tillèt berre éin gratis PostgreSQL per konto/arbeidsområde.
+# Denne kontoen har alt ei gratis database i bruk (anna prosjekt), så tenesta startar
+# utan DATABASE_URL og brukar SQLite på flyktig disk (data nullstillast ved omstart).
+# For varig lagring: opprett/frigjer ein PostgreSQL i Render og legg til miljøvariabelen
+#   DATABASE_URL = Internal Database URL
+# på tenesta – appen byter automatisk til PostgreSQL ved neste omstart.
 services:
   - type: web
     name: nordfjordtrafikk
@@ -17,13 +24,3 @@ services:
         generateValue: true
       - key: PUBLIC_URL
         value: https://nordfjordtrafikk.onrender.com
-      - key: DATABASE_URL
-        fromDatabase:
-          name: nordfjordtrafikk-db
-          property: connectionString
-
-databases:
-  - name: nordfjordtrafikk-db
-    plan: free
-    databaseName: nordfjordtrafikk
-    user: nordfjordtrafikk
