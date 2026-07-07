@@ -457,6 +457,9 @@ a.alert-bar:hover { background: #ffd35a; color: #241A00; }
 .course-desc p { margin: 0 0 .7rem; }
 .course-desc p:last-child { margin-bottom: 0; }
 .calendar-link { margin: 0; }
+.session-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
+.session-list li { display: flex; align-items: center; gap: .6rem; font-weight: 600; }
+.session-list .icon-inline { color: var(--red); }
 
 /* ---------- Kjøretøy ---------- */
 .vehicle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.3rem; margin-top: 2rem; }

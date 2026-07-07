@@ -52,29 +52,67 @@ const parseInstructors = (c) => {
   try { return JSON.parse(c.instructors || '[]'); } catch { return []; }
 };
 
+// Dagsplan for kurs over fleire dagar: [{date:'2026-07-20', start:'16:00', end:'18:00'}, ...]
+const parseSessions = (c) => {
+  try {
+    const s = JSON.parse(c.sessions || '[]');
+    return Array.isArray(s) ? s.filter((x) => x && x.date && x.start) : [];
+  } catch { return []; }
+};
+
+// «måndag 20. juli kl. 16:00–18:00»
+function fmtSession(s) {
+  try {
+    const d = new Date(s.date + 'T12:00');
+    const day = d.toLocaleDateString('nn-NO', { weekday: 'long', day: 'numeric', month: 'long' });
+    return `${day} kl. ${s.start}${s.end ? '–' + s.end : ''}`;
+  } catch { return `${s.date} kl. ${s.start}`; }
+}
+
 // --- iCalendar (.ics) ---
 const icsEsc = (s) => String(s ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
 const icsDt = (iso) => String(iso).replace(/[-:]/g, '').slice(0, 13) + '00'; // YYYYMMDDTHHMM00 (lokal tid)
 
 function courseToVevent(c, host) {
   const instructors = parseInstructors(c);
+  const sessions = parseSessions(c);
   const desc = [c.type, c.duration && `Varigheit: ${c.duration}`, instructors.length && `Kursholdar: ${instructors.join(', ')}`, c.price && `Pris: ${c.price}`, `Påmelding: https://${host}/kurs/${c.id}`]
     .filter(Boolean).join('\n');
-  // Sluttid: same klokkeslett + 2 timar (rein strengaritmetikk, lokal tid)
-  const startTime = String(c.starts_at).slice(11, 16) || '12:00';
-  const endTime = String(Math.min(23, Number(startTime.slice(0, 2)) + 2)).padStart(2, '0') + ':' + startTime.slice(3, 5);
-  const endDay = c.ends_at ? c.ends_at.slice(0, 10) : String(c.starts_at).slice(0, 10);
-  return [
+  const dtstamp = icsDt(new Date().toISOString().slice(0, 16));
+  const plus2h = (t) => String(Math.min(23, Number(t.slice(0, 2)) + 2)).padStart(2, '0') + ':' + t.slice(3, 5);
+
+  const vevent = (uid, dtstart, dtend, extra) => [
     'BEGIN:VEVENT',
-    `UID:kurs-${c.id}@nordfjordtrafikk`,
-    `DTSTAMP:${icsDt(new Date().toISOString().slice(0, 16))}`,
-    `DTSTART:${icsDt(c.starts_at)}`,
-    `DTEND:${icsDt(endDay + 'T' + endTime)}`,
+    `UID:${uid}@nordfjordtrafikk`,
+    `DTSTAMP:${dtstamp}`,
+    `DTSTART:${icsDt(dtstart)}`,
+    `DTEND:${icsDt(dtend)}`,
+    ...(extra || []),
     `SUMMARY:${icsEsc(c.title)} (${icsEsc(c.location)})`,
     `LOCATION:${icsEsc(c.location)}`,
     `DESCRIPTION:${icsEsc(desc)}`,
     'END:VEVENT'
   ].join('\r\n');
+
+  // Dagsplan: éi tidfesta hending per kursdag (taklar ulike klokkeslett og hopp over dagar)
+  if (sessions.length) {
+    return sessions.map((s, i) =>
+      vevent(`kurs-${c.id}-${i + 1}`, `${s.date}T${s.start}`, `${s.date}T${s.end || plus2h(s.start)}`)
+    ).join('\r\n');
+  }
+
+  const startTime = String(c.starts_at).slice(11, 16) || '12:00';
+  const endTime = plus2h(startTime);
+  const startDay = String(c.starts_at).slice(0, 10);
+
+  // Fleirdagskurs utan dagsplan: gjentakande hending med same klokkeslett kvar dag
+  if (c.ends_at && c.ends_at.slice(0, 10) > startDay) {
+    return vevent(`kurs-${c.id}`, c.starts_at, `${startDay}T${endTime}`,
+      [`RRULE:FREQ=DAILY;UNTIL=${c.ends_at.slice(0, 10).replaceAll('-', '')}T235959`]);
+  }
+
+  // Eindagskurs
+  return vevent(`kurs-${c.id}`, c.starts_at, `${startDay}T${endTime}`);
 }
 
 function icsWrap(events) {
@@ -141,7 +179,7 @@ router.get('/kurs/:id(\\d+)', async (req, res, next) => {
   res.render('kurs-detalj', {
     ...data,
     seo: { title: `${course.title} (${course.location}) – Nordfjord Trafikk`, description: `Meld deg på ${course.title} hos Nordfjord Trafikk, avdeling ${course.location}.` },
-    course, taken, instructors: parseInstructors(course), fmtDate, fmtDateRange, path: '/kurs'
+    course, taken, instructors: parseInstructors(course), sessions: parseSessions(course), fmtSession, fmtDate, fmtDateRange, path: '/kurs'
   });
 });
 

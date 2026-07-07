@@ -11,7 +11,7 @@ const usePg = !!process.env.DATABASE_URL;
 const TABLES = `
 CREATE TABLE IF NOT EXISTS content (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS images (id {ID}, name TEXT NOT NULL, mime TEXT NOT NULL, data {BLOB} NOT NULL, created_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS courses (id {ID}, title TEXT NOT NULL, type TEXT NOT NULL DEFAULT '', location TEXT NOT NULL, starts_at TEXT NOT NULL, ends_at TEXT NOT NULL DEFAULT '', duration TEXT NOT NULL DEFAULT '', capacity INTEGER NOT NULL DEFAULT 0, price TEXT NOT NULL DEFAULT '', description TEXT NOT NULL DEFAULT '', instructors TEXT NOT NULL DEFAULT '[]', visible INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS courses (id {ID}, title TEXT NOT NULL, type TEXT NOT NULL DEFAULT '', location TEXT NOT NULL, starts_at TEXT NOT NULL, ends_at TEXT NOT NULL DEFAULT '', sessions TEXT NOT NULL DEFAULT '[]', duration TEXT NOT NULL DEFAULT '', capacity INTEGER NOT NULL DEFAULT 0, price TEXT NOT NULL DEFAULT '', description TEXT NOT NULL DEFAULT '', instructors TEXT NOT NULL DEFAULT '[]', visible INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS signups (id {ID}, course_id INTEGER NOT NULL, name TEXT NOT NULL, birthdate TEXT NOT NULL DEFAULT '', email TEXT NOT NULL DEFAULT '', phone TEXT NOT NULL DEFAULT '', note TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'ny', created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS requests (id {ID}, name TEXT NOT NULL, birthdate TEXT NOT NULL DEFAULT '', email TEXT NOT NULL DEFAULT '', phone TEXT NOT NULL DEFAULT '', klass TEXT NOT NULL DEFAULT '', location TEXT NOT NULL DEFAULT '', note TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'ny', created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS giftcards (id {ID}, buyer_name TEXT NOT NULL, buyer_email TEXT NOT NULL DEFAULT '', buyer_phone TEXT NOT NULL DEFAULT '', value TEXT NOT NULL DEFAULT '', recipient TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'ny', created_at TEXT NOT NULL);
@@ -78,7 +78,8 @@ const db = {
     // Migrasjonar for eksisterande databasar (feilar stille om kolonna finst)
     for (const alter of [
       "ALTER TABLE courses ADD COLUMN ends_at TEXT NOT NULL DEFAULT ''",
-      "ALTER TABLE courses ADD COLUMN instructors TEXT NOT NULL DEFAULT '[]'"
+      "ALTER TABLE courses ADD COLUMN instructors TEXT NOT NULL DEFAULT '[]'",
+      "ALTER TABLE courses ADD COLUMN sessions TEXT NOT NULL DEFAULT '[]'"
     ]) {
       try { await driver.run(alter); } catch (e) { /* kolonna finst alt */ }
     }
@@ -115,14 +116,14 @@ const db = {
   getCourse: (id) => driver.get('SELECT * FROM courses WHERE id = ?', [id]),
   async createCourse(c) {
     const r = await driver.run(
-      'INSERT INTO courses (title, type, location, starts_at, ends_at, duration, capacity, price, description, instructors, visible, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
-      [c.title, c.type || '', c.location, c.starts_at, c.ends_at || '', c.duration || '', c.capacity | 0, c.price || '', c.description || '', JSON.stringify(c.instructors || []), c.visible ? 1 : 0, now()]
+      'INSERT INTO courses (title, type, location, starts_at, ends_at, sessions, duration, capacity, price, description, instructors, visible, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      [c.title, c.type || '', c.location, c.starts_at, c.ends_at || '', JSON.stringify(c.sessions || []), c.duration || '', c.capacity | 0, c.price || '', c.description || '', JSON.stringify(c.instructors || []), c.visible ? 1 : 0, now()]
     );
     return r.lastID;
   },
   updateCourse: (id, c) => driver.run(
-    'UPDATE courses SET title=?, type=?, location=?, starts_at=?, ends_at=?, duration=?, capacity=?, price=?, description=?, instructors=?, visible=? WHERE id=?',
-    [c.title, c.type || '', c.location, c.starts_at, c.ends_at || '', c.duration || '', c.capacity | 0, c.price || '', c.description || '', JSON.stringify(c.instructors || []), c.visible ? 1 : 0, id]
+    'UPDATE courses SET title=?, type=?, location=?, starts_at=?, ends_at=?, sessions=?, duration=?, capacity=?, price=?, description=?, instructors=?, visible=? WHERE id=?',
+    [c.title, c.type || '', c.location, c.starts_at, c.ends_at || '', JSON.stringify(c.sessions || []), c.duration || '', c.capacity | 0, c.price || '', c.description || '', JSON.stringify(c.instructors || []), c.visible ? 1 : 0, id]
   ),
   deleteCourse: async (id) => {
     await driver.run('DELETE FROM signups WHERE course_id = ?', [id]);

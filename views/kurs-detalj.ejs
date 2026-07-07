@@ -58,6 +58,20 @@
         </div>
       <% } %>
 
+      <% if (sessions.length) { %>
+        <div class="course-desc course-sessions">
+          <h2>Kursdagar</h2>
+          <ol class="session-list">
+            <% sessions.forEach(function(s) { %>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-inline"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Zm.5-13H11v6l5.2 3.1.8-1.2-4.5-2.7Z"/></svg>
+                <%= fmtSession(s) %>
+              </li>
+            <% }) %>
+          </ol>
+        </div>
+      <% } %>
+
       <% if (course.description) { %>
         <div class="course-desc">
           <h2>Om kurset</h2>

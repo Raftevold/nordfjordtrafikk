@@ -131,6 +131,11 @@ input[type="checkbox"] { width: auto; margin: 0 .4rem 0 0; }
 .instructor-picker { display: flex; flex-wrap: wrap; gap: .2rem 1.4rem; margin-bottom: 1rem; }
 .instructor-picker .check-row { margin-bottom: .2rem; }
 
+.session-edit-row { display: flex; align-items: center; gap: .6rem; margin-bottom: .45rem; flex-wrap: wrap; }
+.session-edit-row .session-day { min-width: 160px; font-weight: 700; font-size: .9rem; text-transform: capitalize; }
+.session-edit-row input[type="time"] { width: auto; margin: 0; }
+.session-edit-row input:disabled { opacity: .55; background: #F3F4F6; }
+
 .toast {
   position: fixed; bottom: 1.2rem; left: 50%; transform: translateX(-50%);
   background: var(--asphalt); color: #fff; font-weight: 700; padding: .8rem 1.6rem; border-radius: 999px;

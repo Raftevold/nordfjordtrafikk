@@ -244,6 +244,7 @@
           '<label>Avdeling<select data-k="location">' + locations.map(function (l) { return '<option' + (l === k.location ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('') + '</select></label>' +
           '<label>Startdato og klokkeslett<input type="datetime-local" data-k="starts_at" value="' + esc(dt) + '"></label>' +
           '<label>Sluttdato (valfri – for kurs over fleire dagar)<input type="date" data-k="ends_at" value="' + esc(String(k.ends_at || '').slice(0, 10)) + '"></label>' +
+          '</div><div id="sessionSlot"></div><div class="grid-2">' +
           '<label>Varigheit (fritekst)<input data-k="duration" value="' + esc(k.duration) + '" placeholder="T.d. 4 kveldar à 3 timar"></label>' +
           '<label>Tal plassar (0 = uavgrensa)<input type="number" min="0" data-k="capacity" value="' + esc(k.capacity) + '"></label>' +
           '<label>Pris (fritekst)<input data-k="price" value="' + esc(k.price) + '" placeholder="T.d. kr 2 200,-"></label>' +
@@ -264,6 +265,79 @@
         var slot = document.getElementById('kursEditor');
         slot.innerHTML = editorHtml(k);
         slot.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        /* --- Dagsplan for fleirdagskurs --- */
+        var sessRows = [];
+        try { sessRows = JSON.parse((k && k.sessions) || '[]'); } catch (e) {}
+        if (!Array.isArray(sessRows)) sessRows = [];
+        var sameTime = !sessRows.length || sessRows.every(function (s) { return s.start === sessRows[0].start && s.end === sessRows[0].end; });
+        var startInput = slot.querySelector('[data-k="starts_at"]');
+        var endInput = slot.querySelector('[data-k="ends_at"]');
+        var sessSlot = document.getElementById('sessionSlot');
+
+        function plus2h(t) { return String(Math.min(23, Number(t.slice(0, 2)) + 2)).padStart(2, '0') + ':' + t.slice(3, 5); }
+        function dayLabel(dateStr) {
+          try { return new Date(dateStr + 'T12:00').toLocaleDateString('nn-NO', { weekday: 'long', day: 'numeric', month: 'short' }); } catch (e) { return dateStr; }
+        }
+        function dateRange(a, b) {
+          var out = []; var d = new Date(a + 'T12:00'); var end = new Date(b + 'T12:00');
+          while (d <= end && out.length < 60) { out.push(d.toISOString().slice(0, 10)); d.setDate(d.getDate() + 1); }
+          return out;
+        }
+        function syncRows() {
+          sessSlot.querySelectorAll('[data-sstart]').forEach(function (el) { sessRows[Number(el.dataset.sstart)].start = el.value; });
+          sessSlot.querySelectorAll('[data-send]').forEach(function (el) { sessRows[Number(el.dataset.send)].end = el.value; });
+        }
+        function applyFirstToAll() {
+          if (!sessRows.length) return;
+          sessRows.forEach(function (s) { s.start = sessRows[0].start; s.end = sessRows[0].end; });
+        }
+        function rebuildRows() {
+          var sd = (startInput.value || '').slice(0, 10);
+          var ed = endInput.value;
+          if (!sd || !ed || ed <= sd) { sessRows = []; renderSessions(); return; }
+          var defStart = (startInput.value || '').slice(11, 16) || '17:00';
+          var existing = {};
+          sessRows.forEach(function (s) { existing[s.date] = s; });
+          sessRows = dateRange(sd, ed).map(function (date) {
+            return existing[date] || { date: date, start: defStart, end: plus2h(defStart) };
+          });
+          renderSessions();
+        }
+        function renderSessions() {
+          if (!sessRows.length) { sessSlot.innerHTML = ''; return; }
+          sessSlot.innerHTML = '<div class="list-block"><strong>Kursdagar og tidspunkt</strong>' +
+            '<p class="muted small" style="margin:.3rem 0 .7rem">Kvar dag blir ei eiga hending i kalenderen. Fjern dagar det ikkje er kurs (t.d. helg).</p>' +
+            '<div class="check-row"><input type="checkbox" id="sameTimeChk"' + (sameTime ? ' checked' : '') + '><label for="sameTimeChk">Same tidspunkt kvar dag</label></div>' +
+            sessRows.map(function (s, i) {
+              var dis = (sameTime && i > 0) ? ' disabled' : '';
+              return '<div class="session-edit-row">' +
+                '<span class="session-day">' + esc(dayLabel(s.date)) + '</span>' +
+                '<input type="time" data-sstart="' + i + '" value="' + esc(s.start) + '"' + dis + ' aria-label="Frå klokka">' +
+                '<span aria-hidden="true">–</span>' +
+                '<input type="time" data-send="' + i + '" value="' + esc(s.end || '') + '"' + dis + ' aria-label="Til klokka">' +
+                '<button type="button" class="btn-danger btn btn-sm" data-sdel="' + i + '">Fjern dagen</button>' +
+                '</div>';
+            }).join('') + '</div>';
+          document.getElementById('sameTimeChk').addEventListener('change', function () {
+            syncRows(); sameTime = this.checked;
+            if (sameTime) applyFirstToAll();
+            renderSessions();
+          });
+          sessSlot.querySelectorAll('[data-sdel]').forEach(function (b) {
+            b.addEventListener('click', function () { syncRows(); sessRows.splice(Number(b.dataset.sdel), 1); renderSessions(); });
+          });
+          if (sameTime) {
+            ['[data-sstart="0"]', '[data-send="0"]'].forEach(function (sel) {
+              var el = sessSlot.querySelector(sel);
+              if (el) el.addEventListener('change', function () { syncRows(); applyFirstToAll(); renderSessions(); });
+            });
+          }
+        }
+        startInput.addEventListener('change', rebuildRows);
+        endInput.addEventListener('change', rebuildRows);
+        if (sessRows.length) renderSessions(); else rebuildRows();
+
         document.getElementById('btnAvbryt').addEventListener('click', function () { slot.innerHTML = ''; });
         document.getElementById('btnLagreKurs').addEventListener('click', function () {
           var data = { visible: false };
@@ -273,6 +347,17 @@
           data.instructors = Array.prototype.map.call(slot.querySelectorAll('[data-instructor]:checked'), function (el) { return el.value; });
           if (!data.title || !data.starts_at) return toast('Tittel og startdato må fyllast ut', true);
           if (data.ends_at && data.ends_at < String(data.starts_at).slice(0, 10)) return toast('Sluttdatoen kan ikkje vere før startdatoen', true);
+          if (data.ends_at && sessRows.length) {
+            if (sessSlot.querySelector('[data-sstart]')) syncRows();
+            if (sameTime) applyFirstToAll();
+            for (var ri = 0; ri < sessRows.length; ri++) {
+              if (!sessRows[ri].start) return toast('Alle kursdagane må ha frå-klokkeslett', true);
+              if (sessRows[ri].end && sessRows[ri].end <= sessRows[ri].start) return toast('Til-klokkeslettet må vere etter frå-klokkeslettet (' + dayLabel(sessRows[ri].date) + ')', true);
+            }
+            data.sessions = sessRows;
+          } else {
+            data.sessions = [];
+          }
           var call = k && k.id
             ? api('/courses/' + k.id, { method: 'PUT', body: data })
             : api('/courses', { method: 'POST', body: data });
