@@ -4,6 +4,9 @@ Moderne, rask og universelt utforma nettside for Nordfjord Trafikk (trafikkskule
 avdelingar på Nordfjordeid, i Stryn og Stranda/Sykkylven) – med innebygd admin/CMS og
 eit komplett verktøy for kurspåmelding.
 
+**Live:** https://nordfjordtrafikk.onrender.com · **Admin:** https://nordfjordtrafikk.onrender.com/admin
+(Fordi tenesta søv på gratisplanen kan første besøk ta 30–60 sekund.)
+
 ## Teknologi
 
 | Del | Val | Kvifor |
