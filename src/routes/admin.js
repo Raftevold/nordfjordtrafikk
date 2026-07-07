@@ -87,7 +87,7 @@ router.get('/api/overview', async (req, res) => {
 
 // ---------- Innhald (JSON-dokument) ----------
 
-const EDITABLE_KEYS = ['settings', 'seo', 'pages', 'prices', 'team', 'classes', 'courseTypes'];
+const EDITABLE_KEYS = ['settings', 'seo', 'pages', 'prices', 'team', 'classes', 'courseTypes', 'vehicles'];
 
 router.get('/api/content/:key', async (req, res) => {
   const { key } = req.params;

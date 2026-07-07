@@ -19,6 +19,13 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('trust proxy', 1); // Render ligg bak proxy
 app.locals.publicUrl = (process.env.PUBLIC_URL || '').replace(/\/$/, '');
 
+// Innhaldsbasert versjon for cache-busting av CSS/JS (?v=xxxx i lenkjene)
+const fs = require('node:fs');
+app.locals.assetV = crypto.createHash('md5').update(
+  ['public/css/site.css', 'public/js/site.js', 'public/css/admin.css', 'public/js/admin.js']
+    .map((f) => { try { return fs.readFileSync(path.join(__dirname, f)); } catch { return ''; } }).join('')
+).digest('hex').slice(0, 8);
+
 app.use(compression());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
@@ -31,7 +38,7 @@ app.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   res.setHeader('Content-Security-Policy',
     "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; " +
-    "frame-src https://www.google.com; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'");
+    "frame-src https://www.google.com https://maps.google.com https://consent.google.com; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'");
   if (IS_PROD) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   next();
 });
@@ -80,7 +87,7 @@ async function start() {
   await db.init();
 
   // Så inn startinnhald ved første oppstart (skriv aldri over admin-endringar)
-  for (const key of ['settings', 'seo', 'pages', 'prices', 'team', 'classes', 'courseTypes']) {
+  for (const key of ['settings', 'seo', 'pages', 'prices', 'team', 'classes', 'courseTypes', 'vehicles']) {
     const existing = await db.getDoc(key);
     if (existing === null) await db.setDoc(key, seedContent[key]);
   }

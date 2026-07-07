@@ -6,7 +6,7 @@
   <title>Admin – <%= settings.siteName %></title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/admin.css?v=<%= locals.assetV %>">
 </head>
 <body>
 <div class="admin-shell">
@@ -26,6 +26,7 @@
       <button data-view="innhald">📝 Tekst og SEO</button>
       <button data-view="prisar">💰 Prisar</button>
       <button data-view="team">👥 Tilsette</button>
+      <button data-view="kjoretoy">🚗 Kjøretøy</button>
       <button data-view="bilete">🖼️ Bilete</button>
       <button data-view="innstillingar">⚙️ Innstillingar</button>
     </nav>
@@ -39,6 +40,6 @@
   </main>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-<script src="/js/admin.js" defer></script>
+<script src="/js/admin.js?v=<%= locals.assetV %>" defer></script>
 </body>
 </html>

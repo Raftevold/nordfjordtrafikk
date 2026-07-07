@@ -16,18 +16,58 @@
 <section class="section">
   <div class="wrap course-detail">
     <div class="course-info reveal">
-      <dl class="fact-list">
-        <div><dt>Dato og tid</dt><dd><%= fmtDate(course.starts_at) %></dd></div>
-        <% if (course.duration) { %><div><dt>Varigheit</dt><dd><%= course.duration %></dd></div><% } %>
-        <div><dt>Stad</dt><dd><%= course.location %></dd></div>
-        <% if (course.price) { %><div><dt>Pris</dt><dd><%= course.price %></dd></div><% } %>
-        <% if (course.capacity > 0) { %>
-          <div><dt>Ledige plassar</dt><dd><% if (taken >= course.capacity) { %>Fullt (ta kontakt for venteliste)<% } else { %><%= course.capacity - taken %> av <%= course.capacity %><% } %></dd></div>
+      <div class="fact-tiles">
+        <div class="fact-tile">
+          <span class="fact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 16H5V10h14ZM5 8V6h14v2Z"/></svg></span>
+          <div><span class="fact-label">Dato og tid</span><strong class="fact-value"><%= fmtDateRange(course.starts_at, course.ends_at) %></strong></div>
+        </div>
+        <% if (course.duration) { %>
+        <div class="fact-tile">
+          <span class="fact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Zm.5-13H11v6l5.2 3.1.8-1.2-4.5-2.7Z"/></svg></span>
+          <div><span class="fact-label">Varigheit</span><strong class="fact-value"><%= course.duration %></strong></div>
+        </div>
         <% } %>
-      </dl>
-      <% if (course.description) { %>
-        <% course.description.split('\n').filter(Boolean).forEach(function(p) { %><p><%= p %></p><% }) %>
+        <div class="fact-tile">
+          <span class="fact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 14.5 9 2.5 2.5 0 0 1 12 11.5Z"/></svg></span>
+          <div><span class="fact-label">Stad</span><strong class="fact-value"><%= course.location %></strong></div>
+        </div>
+        <% if (course.price) { %>
+        <div class="fact-tile">
+          <span class="fact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="m21.4 11.6-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7c0 .5.2 1 .6 1.4l9 9a2 2 0 0 0 2.8 0l7-7a2 2 0 0 0 0-2.8ZM6.5 8A1.5 1.5 0 1 1 8 6.5 1.5 1.5 0 0 1 6.5 8Z"/></svg></span>
+          <div><span class="fact-label">Pris</span><strong class="fact-value"><%= course.price %></strong></div>
+        </div>
+        <% } %>
+        <% if (course.capacity > 0) { %>
+        <div class="fact-tile">
+          <span class="fact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm-8 1a3.5 3.5 0 1 0-3.5-3.5A3.5 3.5 0 0 0 8 12Zm8 1c-2.7 0-8 1.3-8 4v3h16v-3c0-2.7-5.3-4-8-4Zm-8 1.2A9.6 9.6 0 0 0 6 17v2H0v-2.5C0 14.6 4 13.4 8 13.2Z"/></svg></span>
+          <div><span class="fact-label">Ledige plassar</span><strong class="fact-value"><% if (taken >= course.capacity) { %>Fullt<% } else { %><%= course.capacity - taken %> av <%= course.capacity %><% } %></strong></div>
+        </div>
+        <% } %>
+        <% if (instructors.length) { %>
+        <div class="fact-tile">
+          <span class="fact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z"/></svg></span>
+          <div><span class="fact-label">Kursholdar<%= instructors.length > 1 ? 'ar' : '' %></span><strong class="fact-value"><%= instructors.join(', ') %></strong></div>
+        </div>
+        <% } %>
+      </div>
+
+      <% if (course.capacity > 0) { %>
+        <div class="capacity capacity-detail" role="img" aria-label="<%= Math.max(0, course.capacity - taken) %> av <%= course.capacity %> plassar ledige">
+          <div class="capacity-bar"><span style="--fill:<%= Math.min(100, Math.round(taken / course.capacity * 100)) %>%"></span></div>
+          <small><% if (taken >= course.capacity) { %>Fullt – ta kontakt for venteliste<% } else { %><%= course.capacity - taken %> plassar att<% } %></small>
+        </div>
       <% } %>
+
+      <% if (course.description) { %>
+        <div class="course-desc">
+          <h2>Om kurset</h2>
+          <% course.description.split('\n').filter(Boolean).forEach(function(p) { %><p><%= p %></p><% }) %>
+        </div>
+      <% } %>
+
+      <p class="calendar-link">
+        <a class="btn btn-ghost" href="/kurs/<%= course.id %>/kalender.ics">📅 Legg kurset i kalenderen din</a>
+      </p>
     </div>
 
     <div class="signup-box reveal" id="pamelding">

@@ -139,21 +139,40 @@
     });
   }
 
-  /* ---------- Kart med samtykke ---------- */
+  /* ---------- Kart med samtykke + avdelingsval ---------- */
+  var mapsLoaded = false;
   function loadMaps() {
+    mapsLoaded = true;
     document.querySelectorAll('[data-map]').forEach(function (slot) {
-      if (slot.querySelector('iframe')) return;
-      var iframe = document.createElement('iframe');
+      var iframe = slot.querySelector('iframe');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.title = 'Kart som viser kvar Nordfjord Trafikk held til';
+        iframe.loading = 'lazy';
+        iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+        slot.innerHTML = '';
+        slot.appendChild(iframe);
+      }
       iframe.src = 'https://www.google.com/maps?q=' + slot.dataset.q + '&output=embed';
-      iframe.title = 'Kart som viser kvar Nordfjord Trafikk held til';
-      iframe.loading = 'lazy';
-      iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
-      slot.innerHTML = '';
-      slot.appendChild(iframe);
     });
   }
   document.querySelectorAll('[data-map-load]').forEach(function (btn) {
     btn.addEventListener('click', function () { loadMaps(); });
+  });
+  document.querySelectorAll('[data-map-tab]').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('[data-map-tab]').forEach(function (t) {
+        t.classList.remove('chip-active');
+        t.setAttribute('aria-pressed', 'false');
+      });
+      tab.classList.add('chip-active');
+      tab.setAttribute('aria-pressed', 'true');
+      var slot = document.querySelector('[data-map]');
+      if (slot) {
+        slot.dataset.q = tab.dataset.q;
+        if (mapsLoaded) loadMaps();
+      }
+    });
   });
   if (getConsent() === 'all') loadMaps();
 })();

@@ -191,45 +191,69 @@
   /* ---------------- Kurs ---------------- */
 
   views.kurs = function () {
-    return Promise.all([api('/courses'), api('/content/courseTypes'), api('/content/settings')]).then(function (res) {
+    return Promise.all([api('/courses'), api('/content/courseTypes'), api('/content/settings'), api('/content/team')]).then(function (res) {
       var courses = res[0].courses;
       var types = res[1].value || [];
       var locations = (res[2].value.locations || []).map(function (l) { return l.name; });
+      var teamNames = (res[3].value || []).map(function (t) { return t.name; }).filter(Boolean);
 
       root.innerHTML =
         '<div class="toolbar"><h1>Kurs og påmeldingar</h1><button class="btn btn-primary" id="btnNyttKurs">+ Nytt kurs</button></div>' +
         '<div id="kursEditor"></div>' +
         '<div class="panel"><div class="table-scroll"><table><thead><tr><th>Kurs</th><th>Avdeling</th><th>Dato</th><th>Påmelde</th><th>Synleg</th><th></th></tr></thead><tbody>' +
         (courses.length ? courses.map(function (k) {
+          var instr = [];
+          try { instr = JSON.parse(k.instructors || '[]'); } catch (e) {}
           return '<tr>' +
-            '<td><strong>' + esc(k.title) + '</strong><br><span class="muted small">' + esc(k.type || '') + '</span></td>' +
+            '<td><strong>' + esc(k.title) + '</strong><br><span class="muted small">' + esc(k.type || '') + (instr.length ? ' · ' + esc(instr.join(', ')) : '') + '</span></td>' +
             '<td>' + esc(k.location) + '</td>' +
-            '<td>' + fmtDate(k.starts_at) + '</td>' +
+            '<td>' + fmtDate(k.starts_at) + (k.ends_at ? '<br><span class="muted small">→ ' + esc(k.ends_at) + '</span>' : '') + '</td>' +
             '<td>' + capMini(k) + '</td>' +
             '<td>' + (k.visible ? 'Ja' : '<span class="pill pill-avmeldt">Skjult</span>') + '</td>' +
             '<td class="row-actions">' +
             '<button class="btn btn-ghost btn-sm" data-signups="' + k.id + '">Påmeldingar (' + k.taken + ')</button>' +
             '<button class="btn btn-ghost btn-sm" data-edit="' + k.id + '">Rediger</button>' +
             '<a class="btn btn-ghost btn-sm" href="/admin/api/courses/' + k.id + '/signups.csv">CSV</a>' +
+            '<a class="btn btn-ghost btn-sm" href="/kurs/' + k.id + '/kalender.ics" title="Last ned til kalender">📅</a>' +
             '<button class="btn-danger btn btn-sm" data-delcourse="' + k.id + '">Slett</button>' +
             '</td></tr>' +
             '<tr hidden data-signup-row="' + k.id + '"><td colspan="6"><div data-signup-slot="' + k.id + '"></div></td></tr>';
         }).join('') : '<tr><td colspan="6" class="muted">Ingen kurs enno. Klikk «+ Nytt kurs» for å opprette det første!</td></tr>') +
-        '</tbody></table></div></div>';
+        '</tbody></table></div></div>' +
+        '<div class="panel"><h2>📅 Kalender for kursholdarane</h2>' +
+        '<p class="muted small">Kvar kursholdar kan abonnere på kurskalenderen i Google/Outlook/Apple-kalenderen sin («legg til kalender frå nettadresse»). Då dukkar nye kurs opp automatisk med dato og klokkeslett. Lim inn adressa under – eller ei filtrert adresse per kursholdar.</p>' +
+        '<p><code>' + location.origin + '/kurs.ics</code> <button class="btn btn-ghost btn-sm" data-copy="/kurs.ics">Kopier</button></p>' +
+        (teamNames.length ? '<p class="small">' + teamNames.map(function (n) {
+          return '<button class="btn btn-ghost btn-sm" data-copy="/kurs.ics?kursholdar=' + encodeURIComponent(n) + '">' + esc(n) + '</button>';
+        }).join(' ') + '</p><p class="muted small">Knappane kopierer den personlege feed-adressa til utklippstavla.</p>' : '');
+      root.querySelectorAll('[data-copy]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          navigator.clipboard.writeText(location.origin + b.dataset.copy).then(function () { toast('Kalenderadresse kopiert'); });
+        });
+      });
 
       function editorHtml(k) {
-        k = k || { title: '', type: types[0] || '', location: locations[0] || '', starts_at: '', duration: '', capacity: 12, price: '', description: '', visible: 1 };
+        k = k || { title: '', type: types[0] || '', location: locations[0] || '', starts_at: '', ends_at: '', duration: '', capacity: 12, price: '', description: '', instructors: '[]', visible: 1 };
         var dt = k.starts_at ? String(k.starts_at).slice(0, 16) : '';
+        var selected = [];
+        try { selected = JSON.parse(k.instructors || '[]'); } catch (e) {}
         return '<div class="panel editor" id="editorPanel"><h2>' + (k.id ? 'Rediger kurs' : 'Nytt kurs') + '</h2>' +
           '<div class="grid-2">' +
           '<label>Tittel<input data-k="title" value="' + esc(k.title) + '" placeholder="T.d. Trafikalt grunnkurs – kveldskurs"></label>' +
           '<label>Kurstype<select data-k="type">' + types.map(function (t) { return '<option' + (t === k.type ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select></label>' +
           '<label>Avdeling<select data-k="location">' + locations.map(function (l) { return '<option' + (l === k.location ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('') + '</select></label>' +
-          '<label>Dato og klokkeslett<input type="datetime-local" data-k="starts_at" value="' + esc(dt) + '"></label>' +
+          '<label>Startdato og klokkeslett<input type="datetime-local" data-k="starts_at" value="' + esc(dt) + '"></label>' +
+          '<label>Sluttdato (valfri – for kurs over fleire dagar)<input type="date" data-k="ends_at" value="' + esc(String(k.ends_at || '').slice(0, 10)) + '"></label>' +
           '<label>Varigheit (fritekst)<input data-k="duration" value="' + esc(k.duration) + '" placeholder="T.d. 4 kveldar à 3 timar"></label>' +
           '<label>Tal plassar (0 = uavgrensa)<input type="number" min="0" data-k="capacity" value="' + esc(k.capacity) + '"></label>' +
           '<label>Pris (fritekst)<input data-k="price" value="' + esc(k.price) + '" placeholder="T.d. kr 2 200,-"></label>' +
           '</div>' +
+          '<label>Kursholdar(ar)</label>' +
+          (teamNames.length
+            ? '<div class="instructor-picker">' + teamNames.map(function (n, i) {
+                return '<label class="check-row small"><input type="checkbox" data-instructor value="' + esc(n) + '"' + (selected.indexOf(n) >= 0 ? ' checked' : '') + '> ' + esc(n) + '</label>';
+              }).join('') + '</div>'
+            : '<p class="muted small">Legg inn tilsette under «Tilsette» for å kunne velje kursholdarar.</p>') +
           '<label>Skildring<textarea data-k="description" rows="4" placeholder="Kva inneheld kurset, kven passar det for, kva må ein ha med?">' + esc(k.description) + '</textarea></label>' +
           '<div class="check-row"><input type="checkbox" id="kVis" data-k="visible"' + (k.visible ? ' checked' : '') + '><label for="kVis">Synleg på nettsida</label></div>' +
           '<button class="btn btn-primary" id="btnLagreKurs">Lagre kurs</button> ' +
@@ -246,7 +270,9 @@
           slot.querySelectorAll('[data-k]').forEach(function (el) {
             data[el.dataset.k] = el.type === 'checkbox' ? el.checked : el.value;
           });
-          if (!data.title || !data.starts_at) return toast('Tittel og dato må fyllast ut', true);
+          data.instructors = Array.prototype.map.call(slot.querySelectorAll('[data-instructor]:checked'), function (el) { return el.value; });
+          if (!data.title || !data.starts_at) return toast('Tittel og startdato må fyllast ut', true);
+          if (data.ends_at && data.ends_at < String(data.starts_at).slice(0, 10)) return toast('Sluttdatoen kan ikkje vere før startdatoen', true);
           var call = k && k.id
             ? api('/courses/' + k.id, { method: 'PUT', body: data })
             : api('/courses', { method: 'POST', body: data });
@@ -557,6 +583,59 @@
     });
   };
 
+  /* ---------------- Kjøretøy ---------------- */
+
+  views.kjoretoy = function () {
+    return api('/content/vehicles').then(function (res) {
+      var vehicles = res.value || [];
+
+      function render() {
+        root.innerHTML =
+          '<div class="toolbar"><h1>Kjøretøy</h1><div><button class="btn btn-ghost" id="btnNyttKjoretoy">+ Nytt kjøretøy</button> <button class="btn btn-primary" id="btnLagreKjoretoy">Lagre alt</button></div></div>' +
+          '<p class="muted small">Desse blir viste på sida «Skulebilane våre». Last opp bilete under «Bilete»-fana og lim inn adressa her. Utan bilete viser sida ein tydeleg plasshaldar.</p>' +
+          (vehicles.length ? vehicles.map(function (v, i) {
+            return '<div class="panel"><div class="grid-2">' +
+              '<div>' + field('Namn (t.d. Audi A3)', i + '.name', v.name) +
+              field('Kort skildring (valfri)', i + '.desc', v.desc, { type: 'textarea', rows: 2 }) +
+              field('Biletadresse (valfri)', i + '.img', v.img) + '</div>' +
+              '<div>' + (v.img ? '<img src="' + esc(v.img) + '" alt="" style="width:200px;aspect-ratio:16/10;object-fit:cover;border-radius:12px;background:#eee">' : '<p class="muted small">Ikkje noko bilete enno.</p>') +
+              '<div class="row-actions" style="margin-top:.6rem">' +
+              '<button class="btn btn-ghost btn-sm" data-vmove="' + i + ',-1"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+              '<button class="btn btn-ghost btn-sm" data-vmove="' + i + ',1"' + (i === vehicles.length - 1 ? ' disabled' : '') + '>↓</button>' +
+              '<button class="btn-danger btn btn-sm" data-vdel="' + i + '">Fjern</button></div></div>' +
+              '</div></div>';
+          }).join('') : '<div class="panel"><p class="muted">Ingen kjøretøy enno. Klikk «+ Nytt kjøretøy».</p></div>');
+
+        root.querySelectorAll('[data-vdel]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            if (!confirm('Fjerne kjøretøyet frå nettsida?')) return;
+            sync(); vehicles.splice(Number(b.dataset.vdel), 1); render();
+          });
+        });
+        root.querySelectorAll('[data-vmove]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            sync();
+            var p = b.dataset.vmove.split(',').map(Number);
+            var v = vehicles.splice(p[0], 1)[0];
+            vehicles.splice(p[0] + p[1], 0, v);
+            render();
+          });
+        });
+        document.getElementById('btnNyttKjoretoy').addEventListener('click', function () {
+          sync(); vehicles.push({ name: '', desc: '', img: '' }); render();
+        });
+        document.getElementById('btnLagreKjoretoy').addEventListener('click', function () {
+          sync();
+          api('/content/vehicles', { method: 'PUT', body: { value: vehicles } })
+            .then(function () { toast('Kjøretøya er lagra og publiserte'); })
+            .catch(function (e) { toast(e.message, true); });
+        });
+      }
+      function sync() { collect(root, vehicles); }
+      render();
+    });
+  };
+
   /* ---------------- Bilete ---------------- */
 
   views.bilete = function () {
@@ -637,6 +716,7 @@
               field('Telefon', 'locations.' + i + '.phone', l.phone) +
               field('Kontaktperson', 'locations.' + i + '.person', l.person) +
               field('Firmanamn (til footer)', 'locations.' + i + '.company', l.company) +
+              field('Adresse (til kartet på kontaktsida)', 'locations.' + i + '.address', l.address || '') +
               '</div><button class="btn-danger btn btn-sm" data-locdel="' + i + '">Fjern avdelinga</button></div>';
           }).join('') +
           '</div><button class="btn btn-ghost btn-sm" id="btnNyLoc">+ Legg til avdeling</button></div>' +

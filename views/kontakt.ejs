@@ -33,7 +33,15 @@
       </address>
       <p><a href="mailto:<%= settings.email %>"><%= settings.email %></a></p>
 
-      <div class="map-slot" data-map data-q="<%= encodeURIComponent(settings.address.street + ', ' + settings.address.zip + ' ' + settings.address.city) %>">
+      <h2 class="aside-title">Finn oss på kartet</h2>
+      <div class="map-tabs" role="group" aria-label="Vel avdeling for kartet">
+        <% settings.locations.forEach(function(l, i) { %>
+          <button class="chip <%= i === 0 ? 'chip-active' : '' %>" type="button" data-map-tab
+            data-q="<%= encodeURIComponent(l.address ? l.address : (l.company || 'Nordfjord Trafikk') + ', ' + l.name) %>"
+            aria-pressed="<%= i === 0 ? 'true' : 'false' %>"><%= l.name %></button>
+        <% }) %>
+      </div>
+      <div class="map-slot" data-map data-q="<%= encodeURIComponent(settings.locations[0].address ? settings.locations[0].address : (settings.locations[0].company || 'Nordfjord Trafikk') + ', ' + settings.locations[0].name) %>">
         <div class="map-placeholder">
           <p>Kartet frå Google Maps blir først lasta når du samtykker til tredjeparts-innhald.</p>
           <button class="btn btn-primary" type="button" data-map-load>Vis kart</button>

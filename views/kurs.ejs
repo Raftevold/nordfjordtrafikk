@@ -41,7 +41,7 @@
             <h2 class="course-title"><%= c.title %></h2>
             <p class="course-date">
               <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-inline"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 16H5V10h14ZM5 8V6h14v2Z"/></svg>
-              <%= fmtDate(c.starts_at) %><% if (c.duration) { %> · <%= c.duration %><% } %>
+              <%= fmtDateRange(c.starts_at, c.ends_at) %><% if (c.duration) { %> · <%= c.duration %><% } %>
             </p>
             <% if (c.price) { %><p class="course-price"><%= c.price %></p><% } %>
             <% if (c.capacity > 0) { %>

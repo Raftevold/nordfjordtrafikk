@@ -35,13 +35,59 @@ function fmtDate(iso) {
   } catch { return iso; }
 }
 
+// «onsdag 22. juli kl. 07:30 – laurdag 25. juli 2026» for kurs som går over fleire dagar
+function fmtDateRange(startIso, endIso) {
+  if (!endIso || endIso.slice(0, 10) === String(startIso).slice(0, 10)) return fmtDate(startIso);
+  try {
+    const s = new Date(startIso);
+    const e = new Date(endIso.length <= 10 ? endIso + 'T12:00' : endIso);
+    const sTxt = s.toLocaleDateString('nn-NO', { weekday: 'long', day: 'numeric', month: 'long' }) +
+      ' kl. ' + s.toLocaleTimeString('nn-NO', { hour: '2-digit', minute: '2-digit' });
+    const eTxt = e.toLocaleDateString('nn-NO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return `${sTxt} – ${eTxt}`;
+  } catch { return fmtDate(startIso); }
+}
+
+const parseInstructors = (c) => {
+  try { return JSON.parse(c.instructors || '[]'); } catch { return []; }
+};
+
+// --- iCalendar (.ics) ---
+const icsEsc = (s) => String(s ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+const icsDt = (iso) => String(iso).replace(/[-:]/g, '').slice(0, 13) + '00'; // YYYYMMDDTHHMM00 (lokal tid)
+
+function courseToVevent(c, host) {
+  const instructors = parseInstructors(c);
+  const desc = [c.type, c.duration && `Varigheit: ${c.duration}`, instructors.length && `Kursholdar: ${instructors.join(', ')}`, c.price && `Pris: ${c.price}`, `Påmelding: https://${host}/kurs/${c.id}`]
+    .filter(Boolean).join('\n');
+  // Sluttid: same klokkeslett + 2 timar (rein strengaritmetikk, lokal tid)
+  const startTime = String(c.starts_at).slice(11, 16) || '12:00';
+  const endTime = String(Math.min(23, Number(startTime.slice(0, 2)) + 2)).padStart(2, '0') + ':' + startTime.slice(3, 5);
+  const endDay = c.ends_at ? c.ends_at.slice(0, 10) : String(c.starts_at).slice(0, 10);
+  return [
+    'BEGIN:VEVENT',
+    `UID:kurs-${c.id}@nordfjordtrafikk`,
+    `DTSTAMP:${icsDt(new Date().toISOString().slice(0, 16))}`,
+    `DTSTART:${icsDt(c.starts_at)}`,
+    `DTEND:${icsDt(endDay + 'T' + endTime)}`,
+    `SUMMARY:${icsEsc(c.title)} (${icsEsc(c.location)})`,
+    `LOCATION:${icsEsc(c.location)}`,
+    `DESCRIPTION:${icsEsc(desc)}`,
+    'END:VEVENT'
+  ].join('\r\n');
+}
+
+function icsWrap(events) {
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Nordfjord Trafikk//Kurskalender//NN', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:Nordfjord Trafikk – kurs', events, 'END:VCALENDAR'].join('\r\n');
+}
+
 // ---------- Sider ----------
 
 router.get('/', async (req, res) => {
   const data = await base('home');
   const [team, courses] = await Promise.all([db.getDoc('team', seedContent.team), db.listCourses()]);
   const withCounts = await Promise.all(courses.slice(0, 3).map(async (c) => ({ ...c, taken: await db.countSignups(c.id) })));
-  res.render('home', { ...data, team, courses: withCounts, fmtDate, path: '/' });
+  res.render('home', { ...data, team, courses: withCounts, fmtDate, fmtDateRange, path: '/' });
 });
 
 router.get('/om-oss', async (req, res) => {
@@ -65,7 +111,26 @@ router.get('/kurs', async (req, res) => {
   const data = await base('kurs');
   const courses = await db.listCourses();
   const withCounts = await Promise.all(courses.map(async (c) => ({ ...c, taken: await db.countSignups(c.id) })));
-  res.render('kurs', { ...data, courses: withCounts, fmtDate, valgt: clean(req.query.avdeling, 40), path: '/kurs' });
+  res.render('kurs', { ...data, courses: withCounts, fmtDate, fmtDateRange, valgt: clean(req.query.avdeling, 40), path: '/kurs' });
+});
+
+// Abonnerbar kurskalender (for kursholdarar og elevar). ?kursholdar=Namn filtrerer.
+router.get('/kurs.ics', async (req, res) => {
+  const courses = await db.listCourses();
+  const who = clean(req.query.kursholdar, 80).toLowerCase();
+  const filtered = who ? courses.filter((c) => parseInstructors(c).some((n) => n.toLowerCase().includes(who))) : courses;
+  const events = filtered.map((c) => courseToVevent(c, req.get('host'))).join('\r\n');
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="nordfjordtrafikk-kurs.ics"');
+  res.send(icsWrap(events));
+});
+
+router.get('/kurs/:id(\\d+)/kalender.ics', async (req, res, next) => {
+  const course = await db.getCourse(Number(req.params.id));
+  if (!course) return next();
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="kurs-${course.id}.ics"`);
+  res.send(icsWrap(courseToVevent(course, req.get('host'))));
 });
 
 router.get('/kurs/:id(\\d+)', async (req, res, next) => {
@@ -76,8 +141,14 @@ router.get('/kurs/:id(\\d+)', async (req, res, next) => {
   res.render('kurs-detalj', {
     ...data,
     seo: { title: `${course.title} (${course.location}) – Nordfjord Trafikk`, description: `Meld deg på ${course.title} hos Nordfjord Trafikk, avdeling ${course.location}.` },
-    course, taken, fmtDate, path: '/kurs'
+    course, taken, instructors: parseInstructors(course), fmtDate, fmtDateRange, path: '/kurs'
   });
+});
+
+router.get('/kjoretoy', async (req, res) => {
+  const data = await base('kjoretoy');
+  const vehicles = await db.getDoc('vehicles', seedContent.vehicles);
+  res.render('kjoretoy', { ...data, vehicles, path: '/kjoretoy' });
 });
 
 router.get('/pamelding', async (req, res) => {
@@ -192,7 +263,7 @@ router.get('/robots.txt', (req, res) => {
 });
 
 router.get('/sitemap.xml', async (req, res) => {
-  const urls = ['/', '/om-oss', '/trafikkopplaringa', '/prisar', '/kurs', '/pamelding', '/gavekort', '/kontakt', '/personvern'];
+  const urls = ['/', '/om-oss', '/trafikkopplaringa', '/prisar', '/kurs', '/kjoretoy', '/pamelding', '/gavekort', '/kontakt', '/personvern'];
   const courses = await db.listCourses();
   for (const c of courses) urls.push(`/kurs/${c.id}`);
   const body = urls.map((u) => `  <url><loc>${baseUrl(req)}${u}</loc></url>`).join('\n');

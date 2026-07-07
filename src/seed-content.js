@@ -9,9 +9,9 @@ module.exports = {
     address: { street: 'Rådhusvegen 10', zip: '6770', city: 'Nordfjordeid' },
     orgnr: '', // Ikkje oppgitt på gamal side – fyll inn i admin
     locations: [
-      { name: 'Nordfjordeid', phone: '458 12345', person: 'John Ingvald Myklebust', company: 'Nordfjord Trafikk avd. Eid' },
-      { name: 'Stryn', phone: '41 50 22 52', person: 'Even Andreas Dispen', company: 'Nordfjord Trafikk avd. Stryn' },
-      { name: 'Stranda/Sykkylven', phone: '40 344 344', person: 'Kontor', company: 'Storfjord Trafikk avd. Stranda/Sykkylven' }
+      { name: 'Nordfjordeid', phone: '458 12345', person: 'John Ingvald Myklebust', company: 'Nordfjord Trafikk avd. Eid', address: 'Rådhusvegen 10, 6770 Nordfjordeid' },
+      { name: 'Stryn', phone: '41 50 22 52', person: 'Even Andreas Dispen', company: 'Nordfjord Trafikk avd. Stryn', address: '' },
+      { name: 'Stranda/Sykkylven', phone: '40 344 344', person: 'Kontor', company: 'Storfjord Trafikk avd. Stranda/Sykkylven', address: '' }
     ],
     social: {
       facebook: 'https://www.facebook.com/nordfjordtrafikk',
@@ -31,6 +31,7 @@ module.exports = {
     kurs: { title: 'Kurskalender og påmelding – Nordfjord Trafikk', description: 'Sjå kommande kurs hos Nordfjord Trafikk og meld deg på direkte: trafikalt grunnkurs, mørkekøyring, førstehjelp og meir – på Nordfjordeid, i Stryn og Stranda/Sykkylven.' },
     pamelding: { title: 'Påmelding til opplæring – Nordfjord Trafikk', description: 'Meld deg på trafikkopplæring hos Nordfjord Trafikk. Fyll ut skjemaet, så tek vi kontakt og lagar eit opplegg tilpassa deg.' },
     gavekort: { title: 'Gåvekort på trafikkopplæring – Nordfjord Trafikk', description: 'Gje vekk lappen! Bestill gåvekort på trafikkopplæring som kan brukast til alle lette førarkortklassar, trafikalt grunnkurs og mørkekøyring.' },
+    kjoretoy: { title: 'Skulebilane våre – Nordfjord Trafikk', description: 'Sjå kjøretøya du øver i hos Nordfjord Trafikk: Audi A3, Audi Q3, VW Golf og Tesla Model Y – pluss motorsyklar og mopedar.' },
     kontakt: { title: 'Kontakt oss – Nordfjord Trafikk', description: 'Kontakt Nordfjord Trafikk på Nordfjordeid, i Stryn eller Stranda/Sykkylven. Ring, send e-post eller bruk kontaktskjemaet.' },
     personvern: { title: 'Personvernerklæring – Nordfjord Trafikk', description: 'Slik behandlar Nordfjord Trafikk personopplysningane dine.' }
   },
@@ -184,6 +185,15 @@ module.exports = {
     { name: 'Johannes Urstad', role: 'Trafikklærar', classes: 'B', img: '/img/team-johannes.webp' },
     { name: 'Cathrine Breidablik', role: 'Trafikklærar', classes: 'B', img: '/img/team-cathrine.webp' },
     { name: 'Maiken Solås', role: 'Kontor- og vaffeldame', classes: 'Ho treff du på kontoret vårt på Nordfjordeid', img: '/img/team-maiken.webp' }
+  ],
+
+  // Kjøretøya (frå gamle sida: «Nordfjord Trafikk brukar Audi A3, Audi Q3, VW Golf og Tesla Model Y som skulebilar.»)
+  // Skildringar og fleire bilete kan leggjast til i admin.
+  vehicles: [
+    { name: 'Audi A3', desc: '', img: '/img/skulebil-sedan.webp' },
+    { name: 'Audi Q3', desc: '', img: '' },
+    { name: 'VW Golf', desc: '', img: '' },
+    { name: 'Tesla Model Y', desc: '', img: '' }
   ],
 
   // Klassar til skjema og tenesteoversikt
