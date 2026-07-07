@@ -63,6 +63,21 @@ og stadfesting til den som melder seg på kurs.
    webtenesta + gratis PostgreSQL og koplar dei saman.
 3. Ferdig. Sida ligg på `https://nordfjordtrafikk.onrender.com`.
 
+### Sjekkliste før reell lansering (om verksemda tek i bruk sida)
+
+1. **Database (kritisk):** Opprett ein betalt PostgreSQL i Render (~6–7 $/mnd) og legg
+   `DATABASE_URL` (Internal Database URL) som miljøvariabel på tenesta. Appen byter
+   automatisk – utan dette blir kurs/påmeldingar/innhald sletta ved omstart.
+2. **Org.nr:** Fyll inn i admin → Innstillingar (krav i ehandelslova §8).
+3. **Opningstider:** Byt ut placeholder-teksten i admin → Innstillingar.
+4. **Eige domene:** Peik nordfjordtrafikk.no til Render (Custom Domain på tenesta).
+5. **E-postvarsling (tilrådd):** Sett SMTP_HOST/PORT/USER/PASS + MAIL_TO så skulen får
+   varsel om påmeldingar på e-post.
+6. **Valfritt:** Betalt web-instans (~7 $/mnd) fjernar 30–60 sek kaldstart etter dvale.
+7. **Byt admin-passord** ved første innlogging (admin → Innstillingar).
+
+(Angrerett-/vilkårstekst for gåvekort er medvite utelate – same praksis som dagens side.)
+
 ### Grenser på gratisplanen (viktig)
 
 - **Dvale:** tenesta søv etter 15 min utan trafikk; første besøk etterpå tek ~30–60 s.
