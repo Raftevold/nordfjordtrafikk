@@ -1,0 +1,47 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="hero-kicker reveal">Frå første time til førarprøve</p>
+    <h1 class="page-title reveal">Om trafikkopplæringa</h1>
+  </div>
+  <div class="page-hero-road" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="wrap narrow">
+    <% pages.opplaring.intro.split('\n\n').forEach(function(p) { %>
+      <p class="lead reveal"><%= p %></p>
+    <% }) %>
+  </div>
+</section>
+
+<section class="section section-alt" aria-label="Dei fire trinna i opplæringa">
+  <div class="wrap narrow">
+    <ol class="trinn-timeline">
+      <% pages.opplaring.trinn.forEach(function(t, i) { %>
+        <li class="trinn reveal">
+          <span class="trinn-sign" aria-hidden="true"><%= i + 1 %></span>
+          <div class="trinn-body">
+            <h2>Trinn <%= i + 1 %> – <%= t.title %></h2>
+            <p><%= t.body %></p>
+          </div>
+        </li>
+      <% }) %>
+    </ol>
+    <div class="trinn-finish reveal" aria-hidden="true">
+      <span class="finish-flag">🏁</span> <strong>Oppkjøring!</strong>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap narrow center">
+    <h2 class="section-title reveal">Klar til å starte?</h2>
+    <p class="reveal">Meld deg på opplæring, så lagar vi eit opplegg som passar akkurat deg.</p>
+    <p class="reveal"><a class="btn btn-primary btn-lg" href="/pamelding">Meld deg på opplæring</a></p>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

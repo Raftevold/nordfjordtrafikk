@@ -1,0 +1,43 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="hero-kicker reveal">Oppdatert <%= pages.prisar.updated %></p>
+    <h1 class="page-title reveal">Prisar</h1>
+  </div>
+  <div class="page-hero-road" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="wrap narrow">
+    <% pages.prisar.intro.split('\n\n').forEach(function(p) { %>
+      <p class="lead reveal"><%= p %></p>
+    <% }) %>
+    <p class="note-box reveal">⚠️ <%= pages.prisar.gebyrNote %> <a href="<%= pages.prisar.gebyrUrl %>" target="_blank" rel="noopener">Sjå gjeldande gebyr hos Statens vegvesen</a>.</p>
+  </div>
+</section>
+
+<section class="section section-alt" aria-label="Prisliste">
+  <div class="wrap">
+    <div class="price-grid">
+      <% prices.forEach(function(group, gi) { %>
+        <article class="price-card reveal" style="--d:<%= (gi % 2) * 0.1 %>s" id="<%= group.id %>">
+          <h2><%= group.title %></h2>
+          <dl class="price-list">
+            <% group.items.forEach(function(item) { %>
+              <div class="price-row <%= item.indent ? 'indent' : '' %> <%= !item.price ? 'heading-row' : '' %>">
+                <dt><%= item.label %></dt>
+                <dd><%= item.price %></dd>
+              </div>
+            <% }) %>
+          </dl>
+        </article>
+      <% }) %>
+    </div>
+    <p class="center reveal" style="margin-top:2rem">Treng du ytterlegare informasjon er det berre å ringe, så hjelper vi deg på best mulig måte.</p>
+    <p class="center reveal"><a class="btn btn-primary btn-lg" href="/pamelding">Meld deg på opplæring</a></p>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

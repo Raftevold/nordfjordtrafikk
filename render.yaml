@@ -1,0 +1,29 @@
+# Render Blueprint – opprettar webtenesta og databasen automatisk.
+# Dashboard → New → Blueprint → vel dette repoet.
+services:
+  - type: web
+    name: nordfjordtrafikk
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: node server.js
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: PUBLIC_URL
+        value: https://nordfjordtrafikk.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nordfjordtrafikk-db
+          property: connectionString
+
+databases:
+  - name: nordfjordtrafikk-db
+    plan: free
+    databaseName: nordfjordtrafikk
+    user: nordfjordtrafikk

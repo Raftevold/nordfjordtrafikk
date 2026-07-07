@@ -1,0 +1,39 @@
+<% if (settings.alert && settings.alert.enabled && settings.alert.text) { %>
+  <% if (settings.alert.link) { %>
+    <a class="alert-bar" href="<%= settings.alert.link %>"><span><%= settings.alert.text %></span><span class="alert-arrow" aria-hidden="true">→</span></a>
+  <% } else { %>
+    <div class="alert-bar" role="status"><span><%= settings.alert.text %></span></div>
+  <% } %>
+<% } %>
+<header class="site-header" data-header>
+  <div class="wrap header-inner">
+    <a class="brand" href="/" aria-label="<%= settings.siteName %> – til framsida">
+      <svg class="brand-car" viewBox="0 0 48 22" aria-hidden="true" focusable="false">
+        <path d="M4 15 c0-3 2-5 5-6 l4-4.5 c.6-.7 1.5-1 2.4-1 h12 c1 0 2 .4 2.6 1.2 L34 9 l7 1.6 c2 .5 3 2 3 3.9 V16 c0 .8-.7 1.5-1.5 1.5 H41 a4 4 0 0 1-8 0 H15 a4 4 0 0 1-8 0 H5.5 C4.7 17.5 4 16.8 4 16 Z" fill="currentColor"/>
+        <circle cx="11" cy="17" r="3" fill="var(--bg-header, #fff)"/>
+        <circle cx="37" cy="17" r="3" fill="var(--bg-header, #fff)"/>
+        <path d="M15 9 l3.2-3.6 c.3-.3.7-.5 1.1-.5 H24 v4.1 Z M26 9 V4.9 h3.6 c.5 0 .9.2 1.2.6 L33.5 9 Z" fill="var(--bg-header, #fff)" opacity=".85"/>
+      </svg>
+      <span class="brand-text">
+        <strong>Nordfjord Trafikk</strong>
+        <small><%= settings.tagline %></small>
+      </span>
+    </a>
+    <nav class="main-nav" id="hovudmeny" aria-label="Hovudmeny">
+      <ul>
+        <li><a href="/" <%- path === '/' ? 'aria-current="page"' : '' %>>Heim</a></li>
+        <li><a href="/om-oss" <%- path === '/om-oss' ? 'aria-current="page"' : '' %>>Om oss</a></li>
+        <li><a href="/trafikkopplaringa" <%- path === '/trafikkopplaringa' ? 'aria-current="page"' : '' %>>Opplæringa</a></li>
+        <li><a href="/prisar" <%- path === '/prisar' ? 'aria-current="page"' : '' %>>Prisar</a></li>
+        <li><a href="/kurs" <%- path === '/kurs' ? 'aria-current="page"' : '' %>>Kurs</a></li>
+        <li><a href="/gavekort" <%- path === '/gavekort' ? 'aria-current="page"' : '' %>>Gåvekort</a></li>
+        <li><a href="/kontakt" <%- path === '/kontakt' ? 'aria-current="page"' : '' %>>Kontakt</a></li>
+      </ul>
+      <a class="btn btn-primary nav-cta" href="/pamelding">Meld deg på <span aria-hidden="true">→</span></a>
+    </nav>
+    <button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="hovudmeny" aria-label="Opne meny">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<main id="hovudinnhald">

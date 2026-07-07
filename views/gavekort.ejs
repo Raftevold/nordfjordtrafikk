@@ -1,0 +1,60 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="hero-kicker reveal">Gje vekk fridom på fire hjul</p>
+    <h1 class="page-title reveal">Bestill gåvekort</h1>
+  </div>
+  <div class="page-hero-road" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="wrap form-layout">
+    <div class="form-aside reveal">
+      <p class="lead"><%= pages.gavekort.intro %></p>
+      <img class="form-illu-wide" src="/img/gavekort-banner.webp" alt="Gåvekort på trafikkopplæring frå Nordfjord Trafikk" width="600" height="176" loading="lazy">
+      <p><%= pages.gavekort.how %></p>
+    </div>
+
+    <div class="signup-box reveal" style="--d:.15s">
+      <h2>Bestill her</h2>
+      <form class="js-form" data-endpoint="/api/giftcard" novalidate>
+        <p class="visually-hidden" aria-hidden="true"><label>Ikkje fyll ut dette feltet: <input type="text" name="website" tabindex="-1" autocomplete="off"></label></p>
+        <div class="field">
+          <label for="g-name">Ditt namn <span class="req" aria-hidden="true">*</span></label>
+          <input id="g-name" name="buyer_name" type="text" required autocomplete="name">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="g-email">Din e-postadresse <span class="req" aria-hidden="true">*</span></label>
+            <input id="g-email" name="buyer_email" type="email" required autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="g-phone">Ditt telefonnummer</label>
+            <input id="g-phone" name="buyer_phone" type="tel" autocomplete="tel">
+          </div>
+        </div>
+        <div class="field">
+          <label for="g-value">Verdi på gåvekortet (kr) <span class="req" aria-hidden="true">*</span></label>
+          <input id="g-value" name="value" type="text" inputmode="numeric" required placeholder="T.d. 5000">
+        </div>
+        <div class="field">
+          <label for="g-recipient">Gåvekortmottakaren sitt namn, fødselsdato og telefonnummer <span class="req" aria-hidden="true">*</span></label>
+          <textarea id="g-recipient" name="recipient" rows="3" required></textarea>
+        </div>
+        <button class="btn btn-primary btn-lg" type="submit">Bestill gåvekort</button>
+        <p class="form-status" role="status" aria-live="polite"></p>
+        <p class="muted small">Vi brukar opplysningane berre til å behandle gåvekort-bestillinga. Les <a href="/personvern">personvernerklæringa</a>.</p>
+      </form>
+      <template data-success>
+        <div class="form-success">
+          <h3>Bestillinga er motteken! 🎁</h3>
+          <p>Vi sender gåvekortet og betalingsinformasjon til deg per e-post. Hugs å bruke KID-nummeret når du betalar.</p>
+        </div>
+      </template>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

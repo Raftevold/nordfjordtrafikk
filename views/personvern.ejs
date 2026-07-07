@@ -1,0 +1,48 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="hero-kicker reveal">Oppdatert <%= new Date().toLocaleDateString('nn-NO', { day: 'numeric', month: 'long', year: 'numeric' }) %></p>
+    <h1 class="page-title reveal">Personvernerklæring</h1>
+  </div>
+  <div class="page-hero-road" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="wrap narrow prose">
+    <h2>1. Kven er behandlingsansvarleg?</h2>
+    <p><%= settings.siteName %>, <%= settings.address.street %>, <%= settings.address.zip %> <%= settings.address.city %>, er behandlingsansvarleg for personopplysningar som blir samla inn via denne nettsida. Kontakt oss på <a href="mailto:<%= settings.email %>"><%= settings.email %></a> eller telefon <%= settings.locations[0].phone %> om du har spørsmål om personvern.<% if (settings.orgnr) { %> Org.nr. <%= settings.orgnr %>.<% } %></p>
+
+    <h2>2. Kva opplysningar samlar vi inn, og kvifor?</h2>
+    <p>Vi samlar berre inn opplysningar du sjølv gjev oss gjennom skjema på nettsida:</p>
+    <ul>
+      <li><strong>Kurspåmelding:</strong> namn, fødselsdato, e-postadresse, telefonnummer og eventuell merknad. Formål: å administrere påmeldinga di og gjennomføre kurset. Behandlingsgrunnlag: avtale (GDPR art. 6 nr. 1 b).</li>
+      <li><strong>Påmelding til opplæring:</strong> namn, fødselsdato, e-postadresse, telefonnummer, ønska førarkortklasse og avdeling. Formål: å kontakte deg og avtale opplæring. Behandlingsgrunnlag: avtale (art. 6 nr. 1 b).</li>
+      <li><strong>Gåvekort-bestilling:</strong> namn, e-postadresse og telefonnummer til bestillar, verdi og opplysningar om mottakar. Formål: å utferde gåvekortet og sende betalingsinformasjon. Behandlingsgrunnlag: avtale (art. 6 nr. 1 b).</li>
+      <li><strong>Kontaktskjema:</strong> namn, kontaktinfo og innhaldet i meldinga. Formål: å svare på førespurnaden din. Behandlingsgrunnlag: rettkomen interesse (art. 6 nr. 1 f).</li>
+    </ul>
+
+    <h2>3. Kor lenge lagrar vi opplysningane?</h2>
+    <p>Opplysningane blir lagra så lenge det er nødvendig for formålet: kurspåmeldingar til kurset er gjennomført og eventuell reklamasjonsfrist er ute, førespurnadar til dei er ferdig behandla. Opplysningar knytt til gjennomført opplæring kan bli lagra lenger der lov krev det (t.d. bokføringslova og trafikkopplæringsforskrifta).</p>
+
+    <h2>4. Kven har tilgang til opplysningane?</h2>
+    <p>Berre tilsette i <%= settings.siteName %> har tilgang. Vi sel aldri opplysningane dine. Nettsida er drifta på Render (databehandlar, servrar i EU/EØS-region der tilgjengeleg). <% if (mailEnabled) { %>E-postvarsling skjer via vår e-postleverandør.<% } %></p>
+
+    <h2>5. Informasjonskapslar (cookies)</h2>
+    <p>Nettsida brukar berre <strong>nødvendige</strong> informasjonskapslar:</p>
+    <ul>
+      <li><code>ntsession</code> – tryggingskapsel som berre blir brukt ved innlogging til administrasjonssida. Blir sletta etter 8 timar.</li>
+      <li><code>nt-consent</code> (lokal lagring) – hugsar valet ditt om informasjonskapslar.</li>
+    </ul>
+    <p>Vi brukar <strong>ingen</strong> sporings- eller marknadsføringskapslar. Tredjeparts-innhald (kart frå Google Maps på kontaktsida) blir først lasta dersom du aktivt samtykker. Du kan når som helst endre valet ditt ved å slette nettstaddata i nettlesaren.</p>
+
+    <h2>6. Rettane dine</h2>
+    <p>Etter personopplysningslova og GDPR har du rett til innsyn, retting, sletting, avgrensa behandling, dataportabilitet og til å protestere mot behandlinga. Ta kontakt på <a href="mailto:<%= settings.email %>"><%= settings.email %></a>, så hjelper vi deg. Du har òg rett til å klage til <a href="https://www.datatilsynet.no" target="_blank" rel="noopener">Datatilsynet</a>.</p>
+
+    <h2>7. Tryggleik</h2>
+    <p>All trafikk til og frå nettsida er kryptert (HTTPS). Innsendte skjema blir lagra i ein tilgangsstyrt database, og administrasjonssida er passordbeskytta.</p>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

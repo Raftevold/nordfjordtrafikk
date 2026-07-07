@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="nn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= seo.title %></title>
+  <meta name="description" content="<%= seo.description %>">
+  <meta property="og:title" content="<%= seo.title %>">
+  <meta property="og:description" content="<%= seo.description %>">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="<%= locals.publicUrl || '' %>/img/skulebil-foto.webp">
+  <meta property="og:locale" content="nn_NO">
+  <% if (locals.publicUrl) { %><link rel="canonical" href="<%= locals.publicUrl %><%= path === '/' ? '' : path %>"><% } %>
+  <meta name="theme-color" content="#101318">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/manrope-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/site.css">
+  <script type="application/ld+json"><%- JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: settings.siteName,
+    description: 'Trafikkskule med opplæring i alle lette førarkortklassar. Avdelingar på Nordfjordeid, i Stryn og Stranda/Sykkylven.',
+    url: 'https://www.nordfjordtrafikk.no',
+    email: settings.email,
+    telephone: '+47' + String((settings.locations[0]||{}).phone||'').replace(/\s/g,''),
+    foundingDate: '2009',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: settings.address.street,
+      postalCode: settings.address.zip,
+      addressLocality: settings.address.city,
+      addressCountry: 'NO'
+    },
+    contactPoint: settings.locations.map(l => ({
+      '@type': 'ContactPoint',
+      telephone: '+47' + String(l.phone||'').replace(/\s/g,''),
+      contactType: 'customer service',
+      areaServed: l.name
+    })),
+    sameAs: [settings.social.facebook, settings.social.instagram].filter(Boolean)
+  }).replace(/</g, '\\u003c') %></script>
+</head>
+<body>
+<a class="skip-link" href="#hovudinnhald">Hopp til hovudinnhaldet</a>

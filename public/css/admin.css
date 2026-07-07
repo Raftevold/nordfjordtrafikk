@@ -1,0 +1,144 @@
+/* Admin – Nordfjord Trafikk */
+@font-face {
+  font-family: 'Manrope';
+  src: url('/fonts/manrope-var.woff2') format('woff2');
+  font-weight: 200 800;
+  font-display: swap;
+}
+:root {
+  --red: #C40018; --red-dark: #9E0013;
+  --ink: #1B1F26; --ink-soft: #4A5160;
+  --bg: #F2F3F6; --line: #E1E4EA; --asphalt: #101318;
+  --ok: #1E7B3C; --warn: #A97B00;
+  --radius: 12px;
+  --shadow: 0 8px 24px rgba(16,19,24,.08);
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Manrope', system-ui, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; border-radius: 4px; }
+img { max-width: 100%; }
+h1 { font-size: 1.5rem; margin: 0 0 1.2rem; }
+h2 { font-size: 1.15rem; margin: 1.6rem 0 .7rem; }
+
+/* Login */
+.login-body { display: grid; place-items: center; min-height: 100vh; background: var(--asphalt); }
+.login-card { background: #fff; border-radius: 16px; padding: 2.5rem; width: min(400px, 92vw); box-shadow: 0 30px 80px rgba(0,0,0,.4); text-align: center; }
+.login-car { width: 70px; margin-inline: auto; display: block; }
+.login-card h1 { margin: .8rem 0 0; font-size: 1.4rem; }
+.login-sub { margin: .1rem 0 1.6rem; color: var(--ink-soft); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; font-size: .8rem; }
+.login-card form { text-align: left; display: grid; gap: .4rem; }
+.login-card label { font-weight: 700; font-size: .9rem; margin-top: .5rem; }
+.login-card input { padding: .7rem .9rem; border: 2px solid var(--line); border-radius: 10px; font: inherit; }
+.login-card input:focus { border-color: var(--red); outline: none; }
+.login-card button { margin-top: 1.2rem; padding: .8rem; border: 0; border-radius: 999px; background: var(--red); color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
+.login-card button:hover { background: var(--red-dark); }
+.login-error { background: #FDEDEF; color: #8E0012; border-radius: 8px; padding: .6rem .9rem; font-weight: 600; font-size: .92rem; }
+.login-back { margin-top: 1.4rem; font-size: .9rem; }
+.login-back a { color: var(--ink-soft); }
+
+/* Skall */
+.admin-shell { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+.admin-side { background: var(--asphalt); color: #fff; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.admin-brand { padding: 1.4rem 1.3rem 1rem; display: grid; gap: .1rem; }
+.admin-brand svg { width: 44px; }
+.admin-brand strong { font-size: 1rem; }
+.admin-brand span { color: #8891A0; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; }
+.admin-nav { display: grid; padding: .6rem; gap: .15rem; }
+.admin-nav hr { border: 0; border-top: 1px solid rgba(255,255,255,.12); margin: .5rem .4rem; width: 100%; }
+.admin-nav button {
+  display: flex; align-items: center; gap: .5rem; justify-content: flex-start;
+  background: none; border: 0; color: #C9CFDA; font: inherit; font-weight: 600; font-size: .95rem;
+  padding: .6rem .8rem; border-radius: 9px; cursor: pointer; text-align: left; width: 100%;
+}
+.admin-nav button:hover { background: rgba(255,255,255,.08); color: #fff; }
+.admin-nav button.active { background: var(--red); color: #fff; }
+.nav-badge { margin-left: auto; background: #fff; color: var(--red); font-size: .72rem; font-weight: 800; border-radius: 999px; padding: .05em .55em; }
+.admin-side-foot { margin-top: auto; padding: 1.2rem 1.3rem; display: grid; gap: .5rem; font-size: .9rem; }
+.admin-side-foot a { color: #C9CFDA; }
+.linklike { background: none; border: 0; color: #C9CFDA; font: inherit; cursor: pointer; padding: 0; text-decoration: underline; }
+.linklike:hover, .admin-side-foot a:hover { color: #fff; }
+
+.admin-main { padding: clamp(1.2rem, 3vw, 2.4rem); max-width: 1100px; }
+
+/* Kort og tabellar */
+.panel { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1.4rem; margin-bottom: 1.3rem; box-shadow: var(--shadow); }
+.panel h2:first-child { margin-top: 0; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+.kpi { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.2rem; }
+.kpi strong { display: block; font-size: 1.9rem; font-weight: 800; }
+.kpi span { color: var(--ink-soft); font-size: .85rem; font-weight: 600; }
+.kpi.hot { border-color: var(--red); background: #FDF3F4; }
+
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+th { text-align: left; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); padding: .5rem .6rem; border-bottom: 2px solid var(--line); }
+td { padding: .55rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:hover td { background: #FAFBFC; }
+.table-scroll { overflow-x: auto; }
+
+/* Skjema */
+label { font-weight: 700; font-size: .88rem; display: block; margin-bottom: .25rem; }
+input, select, textarea {
+  width: 100%; padding: .6rem .8rem; font: inherit; color: var(--ink);
+  border: 2px solid var(--line); border-radius: 9px; background: #fff; margin-bottom: .9rem;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--red); outline: none; }
+input[type="checkbox"] { width: auto; margin: 0 .4rem 0 0; }
+.check-row { display: flex; align-items: center; gap: .3rem; font-weight: 600; margin-bottom: .9rem; }
+.check-row label { margin: 0; }
+
+.btn { display: inline-flex; align-items: center; gap: .4em; padding: .55em 1.2em; border-radius: 999px; border: 2px solid transparent; font: inherit; font-weight: 700; font-size: .92rem; cursor: pointer; text-decoration: none; }
+.btn-primary { background: var(--red); color: #fff; }
+.btn-primary:hover { background: var(--red-dark); }
+.btn-ghost { border-color: var(--line); background: #fff; color: var(--ink); }
+.btn-ghost:hover { border-color: var(--red); color: var(--red); }
+.btn-danger { background: none; border-color: transparent; color: #B00020; }
+.btn-danger:hover { text-decoration: underline; }
+.btn-sm { font-size: .82rem; padding: .35em .9em; }
+
+.row-actions { display: flex; gap: .3rem; flex-wrap: wrap; }
+.status-select { margin: 0; width: auto; padding: .3rem .5rem; font-size: .85rem; }
+
+.pill { display: inline-block; padding: .1em .7em; border-radius: 999px; font-size: .78rem; font-weight: 700; }
+.pill-ny { background: #FDEDEF; color: #8E0012; }
+.pill-kontakta { background: #FFF7E0; color: #6b5200; }
+.pill-fullfort, .pill-betalt, .pill-sendt { background: #EAF7EE; color: #14572A; }
+.pill-avmeldt { background: #EEE; color: #555; }
+
+.toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.toolbar h1 { margin: 0; }
+
+.muted { color: var(--ink-soft); }
+.small { font-size: .85rem; }
+.cap-mini { display: inline-block; min-width: 90px; }
+.cap-mini .bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.cap-mini .bar span { display: block; height: 100%; background: var(--ok); }
+.cap-mini.full .bar span { background: var(--red); }
+
+/* Bilete */
+.img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+.img-card { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+.img-card img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+.img-card .img-meta { padding: .5rem .6rem; font-size: .78rem; }
+.img-card .img-meta code { word-break: break-all; }
+
+/* Dialog / editor */
+.editor { border: 2px solid var(--red); }
+.item-row { display: grid; grid-template-columns: 1fr 150px auto; gap: .5rem; align-items: start; }
+.item-row input { margin-bottom: .4rem; }
+.list-block { border: 1px solid var(--line); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; background: #FAFBFC; }
+
+.toast {
+  position: fixed; bottom: 1.2rem; left: 50%; transform: translateX(-50%);
+  background: var(--asphalt); color: #fff; font-weight: 700; padding: .8rem 1.6rem; border-radius: 999px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.3); z-index: 200;
+}
+.toast.error { background: #B00020; }
+
+@media (max-width: 860px) {
+  .admin-shell { grid-template-columns: 1fr; }
+  .admin-side { position: static; height: auto; }
+  .admin-nav { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+  .item-row { grid-template-columns: 1fr; }
+}

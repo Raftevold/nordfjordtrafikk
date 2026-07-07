@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="nn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin – <%= settings.siteName %></title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="admin-side">
+    <div class="admin-brand">
+      <svg viewBox="0 0 48 22" aria-hidden="true"><path d="M4 15 c0-3 2-5 5-6 l4-4.5 c.6-.7 1.5-1 2.4-1 h12 c1 0 2 .4 2.6 1.2 L34 9 l7 1.6 c2 .5 3 2 3 3.9 V16 c0 .8-.7 1.5-1.5 1.5 H41 a4 4 0 0 1-8 0 H15 a4 4 0 0 1-8 0 H5.5 C4.7 17.5 4 16.8 4 16 Z" fill="#fff"/><circle cx="11" cy="17" r="3" fill="#C40018"/><circle cx="37" cy="17" r="3" fill="#C40018"/></svg>
+      <strong>Nordfjord Trafikk</strong>
+      <span>Admin</span>
+    </div>
+    <nav class="admin-nav" aria-label="Adminmeny">
+      <button data-view="oversikt" class="active">📊 Oversikt <span class="nav-badge" data-badge="total" hidden></span></button>
+      <button data-view="kurs">📅 Kurs og påmeldingar <span class="nav-badge" data-badge="newSignups" hidden></span></button>
+      <button data-view="requests">🚗 Opplæring <span class="nav-badge" data-badge="newRequests" hidden></span></button>
+      <button data-view="messages">✉️ Meldingar <span class="nav-badge" data-badge="newMessages" hidden></span></button>
+      <button data-view="giftcards">🎁 Gåvekort <span class="nav-badge" data-badge="newGiftcards" hidden></span></button>
+      <hr>
+      <button data-view="innhald">📝 Tekst og SEO</button>
+      <button data-view="prisar">💰 Prisar</button>
+      <button data-view="team">👥 Tilsette</button>
+      <button data-view="bilete">🖼️ Bilete</button>
+      <button data-view="innstillingar">⚙️ Innstillingar</button>
+    </nav>
+    <div class="admin-side-foot">
+      <a href="/" target="_blank" rel="noopener">Sjå nettsida ↗</a>
+      <form method="post" action="/admin/logout"><button type="submit" class="linklike">Logg ut</button></form>
+    </div>
+  </aside>
+  <main class="admin-main" id="adminMain" tabindex="-1">
+    <div id="viewRoot" aria-live="polite"></div>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="/js/admin.js" defer></script>
+</body>
+</html>

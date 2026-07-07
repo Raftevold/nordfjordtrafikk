@@ -1,0 +1,40 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="hero-kicker reveal">Sidan 2009</p>
+    <h1 class="page-title reveal">Om trafikkskulen</h1>
+  </div>
+  <div class="page-hero-road" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="wrap narrow">
+    <p class="lead reveal"><%= pages.om.intro %></p>
+    <figure class="photo-card reveal">
+      <img src="/img/skulebil-foto.webp" alt="Raud skulebil med Nordfjord Trafikk-dekor" width="1600" height="1143" loading="lazy">
+      <figcaption><%= pages.om.cars %></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section section-alt" aria-labelledby="team-tittel">
+  <div class="wrap">
+    <h2 class="section-title reveal" id="team-tittel"><%= pages.om.teamTitle %></h2>
+    <div class="team-grid">
+      <% team.forEach(function(t, i) { %>
+        <article class="team-card reveal" style="--d:<%= (i % 4) * 0.1 %>s">
+          <img src="<%= t.img %>" alt="Portrett av <%= t.name %>" width="260" height="260" loading="lazy">
+          <div class="team-card-body">
+            <h3><%= t.name %></h3>
+            <p class="team-role"><%= t.role %></p>
+            <% if (t.classes) { %><p class="team-classes"><% if (t.classes.startsWith('Ho ') || t.classes.startsWith('Han ')) { %><%= t.classes %><% } else { %>Underviser i: <%= t.classes %><% } %></p><% } %>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

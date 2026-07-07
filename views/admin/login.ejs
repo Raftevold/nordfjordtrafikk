@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="nn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin – Nordfjord Trafikk</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="login-body">
+  <main class="login-card">
+    <svg class="login-car" viewBox="0 0 48 22" aria-hidden="true">
+      <path d="M4 15 c0-3 2-5 5-6 l4-4.5 c.6-.7 1.5-1 2.4-1 h12 c1 0 2 .4 2.6 1.2 L34 9 l7 1.6 c2 .5 3 2 3 3.9 V16 c0 .8-.7 1.5-1.5 1.5 H41 a4 4 0 0 1-8 0 H15 a4 4 0 0 1-8 0 H5.5 C4.7 17.5 4 16.8 4 16 Z" fill="#C40018"/>
+      <circle cx="11" cy="17" r="3" fill="#fff"/><circle cx="37" cy="17" r="3" fill="#fff"/>
+    </svg>
+    <h1>Nordfjord Trafikk</h1>
+    <p class="login-sub">Administrasjon</p>
+    <% if (error) { %><p class="login-error" role="alert"><%= error %></p><% } %>
+    <form method="post" action="/admin/login">
+      <label for="username">Brukarnamn</label>
+      <input id="username" name="username" type="text" required autocomplete="username" autofocus>
+      <label for="password">Passord</label>
+      <input id="password" name="password" type="password" required autocomplete="current-password">
+      <button type="submit">Logg inn</button>
+    </form>
+    <p class="login-back"><a href="/">← Tilbake til nettsida</a></p>
+  </main>
+</body>
+</html>

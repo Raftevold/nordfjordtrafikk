@@ -1,0 +1,78 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="hero-kicker reveal"><a class="crumb" href="/kurs">← Alle kurs</a></p>
+    <h1 class="page-title reveal"><%= course.title %></h1>
+    <div class="course-meta reveal">
+      <span class="badge badge-loc"><%= course.location %></span>
+      <% if (course.type) { %><span class="badge badge-type"><%= course.type %></span><% } %>
+    </div>
+  </div>
+  <div class="page-hero-road" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="wrap course-detail">
+    <div class="course-info reveal">
+      <dl class="fact-list">
+        <div><dt>Dato og tid</dt><dd><%= fmtDate(course.starts_at) %></dd></div>
+        <% if (course.duration) { %><div><dt>Varigheit</dt><dd><%= course.duration %></dd></div><% } %>
+        <div><dt>Stad</dt><dd><%= course.location %></dd></div>
+        <% if (course.price) { %><div><dt>Pris</dt><dd><%= course.price %></dd></div><% } %>
+        <% if (course.capacity > 0) { %>
+          <div><dt>Ledige plassar</dt><dd><% if (taken >= course.capacity) { %>Fullt (ta kontakt for venteliste)<% } else { %><%= course.capacity - taken %> av <%= course.capacity %><% } %></dd></div>
+        <% } %>
+      </dl>
+      <% if (course.description) { %>
+        <% course.description.split('\n').filter(Boolean).forEach(function(p) { %><p><%= p %></p><% }) %>
+      <% } %>
+    </div>
+
+    <div class="signup-box reveal" id="pamelding">
+      <h2>Meld deg på</h2>
+      <% if (course.capacity > 0 && taken >= course.capacity) { %>
+        <p>Dette kurset er fullt. Ring oss, så set vi deg på venteliste – eller sjå <a href="/kurs">andre kurs</a>.</p>
+      <% } else { %>
+        <form class="js-form" data-endpoint="/api/signup" novalidate>
+          <input type="hidden" name="course_id" value="<%= course.id %>">
+          <p class="visually-hidden" aria-hidden="true"><label>Ikkje fyll ut dette feltet: <input type="text" name="website" tabindex="-1" autocomplete="off"></label></p>
+          <div class="field">
+            <label for="s-name">Fullt namn <span class="req" aria-hidden="true">*</span></label>
+            <input id="s-name" name="name" type="text" required autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="s-birth">Fødselsdato</label>
+            <input id="s-birth" name="birthdate" type="date" autocomplete="bday">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="s-phone">Telefonnummer <span class="req" aria-hidden="true">*</span></label>
+              <input id="s-phone" name="phone" type="tel" required autocomplete="tel">
+            </div>
+            <div class="field">
+              <label for="s-email">E-postadresse</label>
+              <input id="s-email" name="email" type="email" autocomplete="email">
+            </div>
+          </div>
+          <div class="field">
+            <label for="s-note">Merknad (valfritt)</label>
+            <textarea id="s-note" name="note" rows="3"></textarea>
+          </div>
+          <button class="btn btn-primary btn-lg" type="submit">Send påmelding</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+          <p class="muted small">Vi brukar opplysningane berre til å administrere kurspåmeldinga. Les <a href="/personvern">personvernerklæringa</a>.</p>
+        </form>
+        <template data-success>
+          <div class="form-success">
+            <h3>Påmeldinga er motteken! ✅</h3>
+            <p>Vi registrerer deg på kurset og tek kontakt om noko endrar seg. Har du spørsmål? Ring oss gjerne.</p>
+          </div>
+        </template>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

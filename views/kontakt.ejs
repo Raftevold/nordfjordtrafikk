@@ -1,0 +1,85 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="hero-kicker reveal">Vi hjelper deg gjerne</p>
+    <h1 class="page-title reveal">Kontakt oss</h1>
+  </div>
+  <div class="page-hero-road" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="wrap form-layout">
+    <div class="form-aside reveal">
+      <p class="lead"><%= pages.kontakt.intro %></p>
+
+      <h2 class="aside-title">Avdelingar</h2>
+      <ul class="contact-cards">
+        <% settings.locations.forEach(function(l) { %>
+          <li class="contact-card">
+            <h3><%= l.name %></h3>
+            <% if (l.company) { %><p class="muted"><%= l.company %></p><% } %>
+            <% if (l.person) { %><p><%= l.person %></p><% } %>
+            <a class="btn btn-ghost" href="tel:+47<%= String(l.phone).replace(/\s/g,'') %>">📞 <%= l.phone %></a>
+          </li>
+        <% }) %>
+      </ul>
+
+      <h2 class="aside-title">Besøk oss</h2>
+      <address>
+        <%= settings.siteName %><br>
+        <%= settings.address.street %>, <%= settings.address.zip %> <%= settings.address.city %>
+      </address>
+      <p><a href="mailto:<%= settings.email %>"><%= settings.email %></a></p>
+
+      <div class="map-slot" data-map data-q="<%= encodeURIComponent(settings.address.street + ', ' + settings.address.zip + ' ' + settings.address.city) %>">
+        <div class="map-placeholder">
+          <p>Kartet frå Google Maps blir først lasta når du samtykker til tredjeparts-innhald.</p>
+          <button class="btn btn-primary" type="button" data-map-load>Vis kart</button>
+          <p class="muted small">Ved å vise kartet godtek du <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google sin personvernpraksis</a>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="signup-box reveal" style="--d:.15s">
+      <h2>Send oss ei melding</h2>
+      <form class="js-form" data-endpoint="/api/contact" novalidate>
+        <p class="visually-hidden" aria-hidden="true"><label>Ikkje fyll ut dette feltet: <input type="text" name="website" tabindex="-1" autocomplete="off"></label></p>
+        <div class="field">
+          <label for="k-name">Namn <span class="req" aria-hidden="true">*</span></label>
+          <input id="k-name" name="name" type="text" required autocomplete="name">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="k-email">E-postadresse</label>
+            <input id="k-email" name="email" type="email" autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="k-phone">Telefonnummer</label>
+            <input id="k-phone" name="phone" type="tel" autocomplete="tel">
+          </div>
+        </div>
+        <div class="field">
+          <label for="k-subject">Emne</label>
+          <input id="k-subject" name="subject" type="text">
+        </div>
+        <div class="field">
+          <label for="k-message">Melding <span class="req" aria-hidden="true">*</span></label>
+          <textarea id="k-message" name="message" rows="5" required></textarea>
+        </div>
+        <button class="btn btn-primary btn-lg" type="submit">Send melding</button>
+        <p class="form-status" role="status" aria-live="polite"></p>
+        <p class="muted small">Vi brukar opplysningane berre til å svare på meldinga di. Les <a href="/personvern">personvernerklæringa</a>.</p>
+      </form>
+      <template data-success>
+        <div class="form-success">
+          <h3>Meldinga er send! ✅</h3>
+          <p>Vi svarar deg så fort vi kan. Hastar det? Ring avdelinga di direkte.</p>
+        </div>
+      </template>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

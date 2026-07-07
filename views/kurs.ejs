@@ -1,0 +1,61 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="hero-kicker reveal">Kurskalender</p>
+    <h1 class="page-title reveal">Påmelding til kurs</h1>
+  </div>
+  <div class="page-hero-road" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <p class="lead narrow-p reveal"><%= pages.kurs.intro %></p>
+
+    <div class="filter-row reveal" role="group" aria-label="Filtrer på avdeling">
+      <a class="chip <%= !valgt ? 'chip-active' : '' %>" href="/kurs" <%- !valgt ? 'aria-current="true"' : '' %>>Alle avdelingar</a>
+      <% settings.locations.forEach(function(l) { %>
+        <a class="chip <%= valgt === l.name ? 'chip-active' : '' %>" href="/kurs?avdeling=<%= encodeURIComponent(l.name) %>" <%- valgt === l.name ? 'aria-current="true"' : '' %>><%= l.name %></a>
+      <% }) %>
+    </div>
+
+    <% const filtered = valgt ? courses.filter(c => c.location === valgt) : courses; %>
+    <% if (!filtered.length) { %>
+      <div class="empty-state reveal">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 16H5V10h14ZM5 8V6h14v2Z"/></svg>
+        <p><%= pages.kurs.empty %></p>
+        <div class="empty-actions">
+          <a class="btn btn-primary" href="/kontakt">Ta kontakt</a>
+          <a class="btn btn-ghost" href="/pamelding">Meld interesse for opplæring</a>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="course-grid">
+        <% filtered.forEach(function(c, i) { %>
+          <article class="course-card course-card-light reveal" style="--d:<%= (i % 3) * 0.1 %>s">
+            <div class="course-meta">
+              <span class="badge badge-loc"><%= c.location %></span>
+              <% if (c.type) { %><span class="badge badge-type"><%= c.type %></span><% } %>
+            </div>
+            <h2 class="course-title"><%= c.title %></h2>
+            <p class="course-date">
+              <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-inline"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 16H5V10h14ZM5 8V6h14v2Z"/></svg>
+              <%= fmtDate(c.starts_at) %><% if (c.duration) { %> · <%= c.duration %><% } %>
+            </p>
+            <% if (c.price) { %><p class="course-price"><%= c.price %></p><% } %>
+            <% if (c.capacity > 0) { %>
+              <div class="capacity" role="img" aria-label="<%= Math.max(0, c.capacity - c.taken) %> av <%= c.capacity %> plassar ledige">
+                <div class="capacity-bar"><span style="--fill:<%= Math.min(100, Math.round(c.taken / c.capacity * 100)) %>%"></span></div>
+                <small><% if (c.taken >= c.capacity) { %>Fullt – ta kontakt for venteliste<% } else { %><%= c.capacity - c.taken %> plassar att<% } %></small>
+              </div>
+            <% } %>
+            <a class="btn btn-primary" href="/kurs/<%= c.id %>">Sjå kurset og meld deg på</a>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
