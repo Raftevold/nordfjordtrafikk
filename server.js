@@ -37,8 +37,10 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   res.setHeader('Content-Security-Policy',
-    "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; " +
-    "frame-src https://www.google.com https://maps.google.com https://consent.google.com; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'");
+    "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " +
+    "script-src 'self' https://www.instagram.com; " +
+    "frame-src https://www.google.com https://maps.google.com https://consent.google.com https://www.instagram.com; " +
+    "connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'");
   if (IS_PROD) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   next();
 });
@@ -87,7 +89,7 @@ async function start() {
   await db.init();
 
   // Så inn startinnhald ved første oppstart (skriv aldri over admin-endringar)
-  for (const key of ['settings', 'seo', 'pages', 'prices', 'team', 'classes', 'courseTypes', 'vehicles']) {
+  for (const key of ['settings', 'seo', 'pages', 'prices', 'team', 'classes', 'courseTypes', 'vehicles', 'faq', 'instagram']) {
     const existing = await db.getDoc(key);
     if (existing === null) await db.setDoc(key, seedContent[key]);
   }

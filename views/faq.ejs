@@ -1,0 +1,46 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="hero-kicker reveal">Det folk lurer mest på</p>
+    <h1 class="page-title reveal">Ofte stilte spørsmål</h1>
+  </div>
+  <div class="page-hero-road" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="wrap narrow">
+    <div class="faq-list">
+      <% faq.forEach(function(item, i) { %>
+        <details class="faq-item reveal" style="--d:<%= Math.min(i, 5) * 0.06 %>s" <%- i === 0 ? 'open' : '' %>>
+          <summary><span><%= item.q %></span><span class="faq-chevron" aria-hidden="true">▾</span></summary>
+          <div class="faq-answer">
+            <% String(item.a).split('\n').filter(Boolean).forEach(function(p) { %><p><%= p %></p><% }) %>
+          </div>
+        </details>
+      <% }) %>
+    </div>
+    <div class="center" style="margin-top:2.5rem">
+      <p class="lead reveal">Fann du ikkje svaret du leita etter?</p>
+      <p class="reveal">
+        <a class="btn btn-primary" href="/kontakt">Spør oss direkte</a>
+        <a class="btn btn-ghost" href="tel:+47<%= String(settings.locations[0].phone).replace(/\s/g,'') %>">Ring <%= settings.locations[0].phone %></a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json"><%- JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map(function(item) {
+    return {
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a }
+    };
+  })
+}).replace(/</g, '\\u003c') %></script>
+
+<%- include('partials/footer') %>

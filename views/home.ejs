@@ -113,6 +113,29 @@
   </div>
 </section>
 
+<% if (posts && posts.length) { %>
+<section class="section section-tight" aria-labelledby="aktuelt-tittel">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2 class="section-title" id="aktuelt-tittel">Aktuelt</h2>
+      <a class="btn btn-ghost" href="/aktuelt">Alle nyheiter →</a>
+    </div>
+    <div class="news-grid news-grid-2">
+      <% posts.forEach(function(p, i) { %>
+        <article class="news-card reveal" style="--d:<%= i * 0.1 %>s">
+          <% if (p.image) { %><a href="/aktuelt/<%= p.id %>" tabindex="-1" aria-hidden="true"><img src="<%= p.image %>" alt="" width="480" height="270" loading="lazy"></a><% } %>
+          <div class="news-body">
+            <p class="news-date"><%= fmtPostDate(p.created_at) %></p>
+            <h3><a href="/aktuelt/<%= p.id %>"><%= p.title %></a></h3>
+            <p class="news-excerpt"><%= String(p.body).replace(/\s+/g, ' ').slice(0, 120) %><%= p.body.length > 120 ? ' …' : '' %></p>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
 <section class="section section-tight" aria-label="Gåvekort">
   <div class="wrap">
     <a class="gift-banner reveal" href="/gavekort">

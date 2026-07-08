@@ -142,9 +142,9 @@ function icsWrap(events) {
 
 router.get('/', async (req, res) => {
   const data = await base('home');
-  const [team, courses] = await Promise.all([db.getDoc('team', seedContent.team), db.listCourses()]);
+  const [team, courses, posts] = await Promise.all([db.getDoc('team', seedContent.team), db.listCourses(), db.listPosts()]);
   const withCounts = await Promise.all(courses.slice(0, 3).map(async (c) => ({ ...c, taken: await db.countSignups(c.id) })));
-  res.render('home', { ...data, team, courses: withCounts, fmtDate, fmtDateRange, path: '/' });
+  res.render('home', { ...data, team, courses: withCounts, posts: posts.slice(0, 2), fmtPostDate, fmtDate, fmtDateRange, path: '/' });
 });
 
 router.get('/om-oss', async (req, res) => {
@@ -226,8 +226,37 @@ router.get('/kontakt', async (req, res) => {
 
 router.get('/personvern', async (req, res) => {
   const data = await base('personvern');
-  res.render('personvern', { ...data, mailEnabled: mail.enabled, path: '/personvern' });
+  res.render('personvern', { ...data, mailEnabled: await mail.isEnabled(), path: '/personvern' });
 });
+
+router.get('/faq', async (req, res) => {
+  const data = await base('faq');
+  const faq = await db.getDoc('faq', seedContent.faq);
+  res.render('faq', { ...data, faq, path: '/faq' });
+});
+
+router.get('/aktuelt', async (req, res) => {
+  const data = await base('aktuelt');
+  const [posts, instagram] = await Promise.all([db.listPosts(), db.getDoc('instagram', seedContent.instagram)]);
+  res.render('aktuelt', { ...data, posts, instagram, fmtPostDate, path: '/aktuelt' });
+});
+
+router.get('/aktuelt/:id(\\d+)', async (req, res, next) => {
+  const post = await db.getPost(Number(req.params.id));
+  if (!post || !post.visible) return next();
+  const data = await base('aktuelt');
+  res.render('aktuelt-post', {
+    ...data,
+    seo: { title: `${post.title} – Nordfjord Trafikk`, description: String(post.body).slice(0, 150).replace(/\s+/g, ' ') },
+    post, fmtPostDate, path: '/aktuelt'
+  });
+});
+
+function fmtPostDate(iso) {
+  try {
+    return new Date(iso).toLocaleDateString('nn-NO', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch { return String(iso).slice(0, 10); }
+}
 
 // ---------- Skjema (API) ----------
 
@@ -320,9 +349,11 @@ router.get('/robots.txt', (req, res) => {
 });
 
 router.get('/sitemap.xml', async (req, res) => {
-  const urls = ['/', '/om-oss', '/trafikkopplaringa', '/prisar', '/kurs', '/kjoretoy', '/pamelding', '/gavekort', '/kontakt', '/personvern'];
+  const urls = ['/', '/om-oss', '/trafikkopplaringa', '/prisar', '/kurs', '/kjoretoy', '/faq', '/aktuelt', '/pamelding', '/gavekort', '/kontakt', '/personvern'];
   const courses = await db.listCourses();
   for (const c of courses) urls.push(`/kurs/${c.id}`);
+  const posts = await db.listPosts();
+  for (const p of posts) urls.push(`/aktuelt/${p.id}`);
   const body = urls.map((u) => `  <url><loc>${baseUrl(req)}${u}</loc></url>`).join('\n');
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`);
 });

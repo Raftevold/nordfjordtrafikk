@@ -213,6 +213,7 @@
             '<td class="row-actions">' +
             '<button class="btn btn-ghost btn-sm" data-signups="' + k.id + '">Påmeldingar (' + k.taken + ')</button>' +
             '<button class="btn btn-ghost btn-sm" data-edit="' + k.id + '">Rediger</button>' +
+            '<button class="btn btn-ghost btn-sm" data-copycourse="' + k.id + '" title="Opprett nytt kurs med same innhald">Kopier</button>' +
             '<a class="btn btn-ghost btn-sm" href="/admin/api/courses/' + k.id + '/signups.csv">CSV</a>' +
             '<a class="btn btn-ghost btn-sm" href="/kurs/' + k.id + '/kalender.ics" title="Last ned til kalender">📅</a>' +
             '<button class="btn-danger btn btn-sm" data-delcourse="' + k.id + '">Slett</button>' +
@@ -372,6 +373,15 @@
           openEditor(courses.find(function (k) { return k.id === Number(btn.dataset.edit); }));
         });
       });
+      root.querySelectorAll('[data-copycourse]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var original = courses.find(function (k) { return k.id === Number(btn.dataset.copycourse); });
+          if (!original) return;
+          var copy = Object.assign({}, original, { id: undefined });
+          openEditor(copy);
+          toast('Kopi klar – hugs å byte dato før du lagrar');
+        });
+      });
       root.querySelectorAll('[data-delcourse]').forEach(function (btn) {
         btn.addEventListener('click', function () {
           if (!confirm('Slette kurset og ALLE påmeldingane? Dette kan ikkje angrast.')) return;
@@ -459,6 +469,169 @@
     { th: 'Verdi', td: function (i) { return '<strong>' + esc(i.value) + '</strong>'; } },
     { th: 'Mottakar', td: function (i) { return esc(i.recipient); } }
   ]);
+
+  /* ---------------- Statistikk ---------------- */
+
+  views.statistikk = function () {
+    return api('/stats').then(function (data) {
+      var maxBar = Math.max(1, Math.max.apply(null, data.perMonth.map(function (m) { return m.signups + m.requests; })));
+      var monthName = function (ym) {
+        var names = ['jan', 'feb', 'mar', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'des'];
+        return names[Number(ym.slice(5, 7)) - 1] + ' ' + ym.slice(2, 4);
+      };
+      root.innerHTML =
+        '<div class="toolbar"><h1>Statistikk</h1></div>' +
+        '<div class="grid-4">' +
+        '<div class="kpi"><strong>' + data.totals.courses + '</strong><span>Kurs totalt</span></div>' +
+        '<div class="kpi"><strong>' + data.totals.signups + '</strong><span>Kurspåmeldingar totalt</span></div>' +
+        '<div class="kpi"><strong>' + data.totals.requests + '</strong><span>Opplæringsønske totalt</span></div>' +
+        '</div>' +
+        '<div class="panel"><h2>Påmeldingar siste 12 månader</h2>' +
+        '<div class="chart" role="img" aria-label="Stolpediagram over påmeldingar per månad">' +
+        data.perMonth.map(function (m) {
+          var h1 = Math.round(m.signups / maxBar * 120);
+          var h2 = Math.round(m.requests / maxBar * 120);
+          return '<div class="chart-col" title="' + m.month + ': ' + m.signups + ' kurspåmeldingar, ' + m.requests + ' opplæringsønske">' +
+            '<span class="chart-num">' + ((m.signups + m.requests) || '') + '</span>' +
+            '<div class="chart-bars"><span class="bar-a" style="height:' + h1 + 'px"></span><span class="bar-b" style="height:' + h2 + 'px"></span></div>' +
+            '<span class="chart-label">' + monthName(m.month) + '</span></div>';
+        }).join('') +
+        '</div>' +
+        '<p class="small"><span class="legend legend-a"></span> Kurspåmeldingar &nbsp; <span class="legend legend-b"></span> Opplæringsønske</p></div>' +
+
+        '<div class="grid-2">' +
+        '<div class="panel"><h2>Fyllingsgrad per kurstype</h2>' + fillTable(data.byType) + '</div>' +
+        '<div class="panel"><h2>Fyllingsgrad per avdeling</h2>' + fillTable(data.byLocation) + '</div>' +
+        '</div>' +
+
+        '<div class="panel"><h2>Siste kurs</h2>' +
+        (data.courses.length
+          ? '<div class="table-scroll"><table><thead><tr><th>Kurs</th><th>Avdeling</th><th>Dato</th><th>Fylling</th></tr></thead><tbody>' +
+            data.courses.map(function (c) {
+              return '<tr><td><strong>' + esc(c.title) + '</strong></td><td>' + esc(c.location) + '</td><td>' + fmtDate(c.starts_at) + '</td>' +
+                '<td><span class="cap-mini' + (c.pct >= 100 ? ' full' : '') + '"><span class="bar"><span style="width:' + c.pct + '%"></span></span><span class="small">' + c.taken + '/' + c.capacity + ' (' + c.pct + ' %)</span></span></td></tr>';
+            }).join('') + '</tbody></table></div>'
+          : '<p class="muted">Ingen kurs med kapasitet enno.</p>') +
+        '</div>';
+
+      function fillTable(rows) {
+        if (!rows.length) return '<p class="muted">Ikkje nok data enno.</p>';
+        return '<table><thead><tr><th></th><th>Kurs</th><th>Snittfylling</th></tr></thead><tbody>' +
+          rows.map(function (r) {
+            return '<tr><td><strong>' + esc(r.name) + '</strong></td><td>' + r.courses + '</td><td>' + r.avgPct + ' %</td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+    });
+  };
+
+  /* ---------------- Aktuelt ---------------- */
+
+  views.aktuelt = function () {
+    return api('/posts').then(function (res) {
+      var posts = res.posts;
+      root.innerHTML =
+        '<div class="toolbar"><h1>Aktuelt</h1><button class="btn btn-primary" id="btnNyttInnlegg">+ Nytt innlegg</button></div>' +
+        '<p class="muted small">Innlegga blir viste på <a href="/aktuelt" target="_blank" rel="noopener">/aktuelt</a> og dei to nyaste på framsida. Tips: bruk varsellinja (Innstillingar) med lenkje til eit innlegg, t.d. <code>/aktuelt/3</code>.</p>' +
+        '<div id="postEditor"></div>' +
+        '<div class="panel"><div class="table-scroll"><table><thead><tr><th>Tittel</th><th>Dato</th><th>Synleg</th><th></th></tr></thead><tbody>' +
+        (posts.length ? posts.map(function (p) {
+          return '<tr><td><strong>' + esc(p.title) + '</strong></td><td>' + fmtDate(p.created_at) + '</td>' +
+            '<td>' + (p.visible ? 'Ja' : '<span class="pill pill-avmeldt">Skjult</span>') + '</td>' +
+            '<td class="row-actions">' +
+            '<a class="btn btn-ghost btn-sm" href="/aktuelt/' + p.id + '" target="_blank" rel="noopener">Sjå</a>' +
+            '<button class="btn btn-ghost btn-sm" data-editpost="' + p.id + '">Rediger</button>' +
+            '<button class="btn-danger btn btn-sm" data-delpost="' + p.id + '">Slett</button></td></tr>';
+        }).join('') : '<tr><td colspan="4" class="muted">Ingen innlegg enno. Klikk «+ Nytt innlegg»!</td></tr>') +
+        '</tbody></table></div></div>';
+
+      function openPostEditor(p) {
+        p = p || { title: '', body: '', image: '', visible: 1 };
+        var slot = document.getElementById('postEditor');
+        slot.innerHTML = '<div class="panel editor"><h2>' + (p.id ? 'Rediger innlegg' : 'Nytt innlegg') + '</h2>' +
+          '<label>Tittel<input data-p="title" value="' + esc(p.title) + '" placeholder="T.d. Nytt MC-kurs i mai"></label>' +
+          '<label>Tekst<textarea data-p="body" rows="7" placeholder="Skriv innlegget her. Tomme linjer gjev nye avsnitt.">' + esc(p.body) + '</textarea></label>' +
+          '<label>Biletadresse (valfri – kopier frå «Bilete»-fana)<input data-p="image" value="' + esc(p.image) + '"></label>' +
+          '<div class="check-row"><input type="checkbox" id="pVis" data-p="visible"' + (p.visible ? ' checked' : '') + '><label for="pVis">Synleg på nettsida</label></div>' +
+          '<button class="btn btn-primary" id="btnLagreInnlegg">Publiser</button> ' +
+          '<button class="btn btn-ghost" id="btnAvbrytInnlegg">Avbryt</button></div>';
+        slot.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('btnAvbrytInnlegg').addEventListener('click', function () { slot.innerHTML = ''; });
+        document.getElementById('btnLagreInnlegg').addEventListener('click', function () {
+          var data = {};
+          slot.querySelectorAll('[data-p]').forEach(function (el) { data[el.dataset.p] = el.type === 'checkbox' ? el.checked : el.value; });
+          if (!data.title) return toast('Tittel må fyllast ut', true);
+          var call = p.id ? api('/posts/' + p.id, { method: 'PUT', body: data }) : api('/posts', { method: 'POST', body: data });
+          call.then(function () { toast('Innlegget er lagra og publisert'); views.aktuelt(); })
+            .catch(function (e) { toast(e.message, true); });
+        });
+      }
+
+      document.getElementById('btnNyttInnlegg').addEventListener('click', function () { openPostEditor(null); });
+      root.querySelectorAll('[data-editpost]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          openPostEditor(posts.find(function (p) { return p.id === Number(b.dataset.editpost); }));
+        });
+      });
+      root.querySelectorAll('[data-delpost]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          if (!confirm('Slette innlegget for godt?')) return;
+          api('/posts/' + b.dataset.delpost, { method: 'DELETE' })
+            .then(function () { toast('Sletta'); views.aktuelt(); })
+            .catch(function (e) { toast(e.message, true); });
+        });
+      });
+    });
+  };
+
+  /* ---------------- FAQ ---------------- */
+
+  views.faq = function () {
+    return api('/content/faq').then(function (res) {
+      var faq = res.value || [];
+
+      function render() {
+        root.innerHTML =
+          '<div class="toolbar"><h1>Ofte stilte spørsmål</h1><div><button class="btn btn-ghost" id="btnNyttSporsmal">+ Nytt spørsmål</button> <button class="btn btn-primary" id="btnLagreFaq">Lagre alt</button></div></div>' +
+          '<p class="muted small">Blir vist på <a href="/faq" target="_blank" rel="noopener">/faq</a> – og Google kan vise spørsmåla direkte i søkjeresultata.</p>' +
+          faq.map(function (f, i) {
+            return '<div class="panel">' +
+              field('Spørsmål', i + '.q', f.q) +
+              field('Svar', i + '.a', f.a, { type: 'textarea', rows: 3 }) +
+              '<div class="row-actions">' +
+              '<button class="btn btn-ghost btn-sm" data-fmove="' + i + ',-1"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+              '<button class="btn btn-ghost btn-sm" data-fmove="' + i + ',1"' + (i === faq.length - 1 ? ' disabled' : '') + '>↓</button>' +
+              '<button class="btn-danger btn btn-sm" data-fdel="' + i + '">Fjern</button></div></div>';
+          }).join('');
+
+        root.querySelectorAll('[data-fdel]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            if (!confirm('Fjerne spørsmålet?')) return;
+            sync(); faq.splice(Number(b.dataset.fdel), 1); render();
+          });
+        });
+        root.querySelectorAll('[data-fmove]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            sync();
+            var p = b.dataset.fmove.split(',').map(Number);
+            var f = faq.splice(p[0], 1)[0];
+            faq.splice(p[0] + p[1], 0, f);
+            render();
+          });
+        });
+        document.getElementById('btnNyttSporsmal').addEventListener('click', function () {
+          sync(); faq.push({ q: '', a: '' }); render();
+        });
+        document.getElementById('btnLagreFaq').addEventListener('click', function () {
+          sync();
+          api('/content/faq', { method: 'PUT', body: { value: faq } })
+            .then(function () { toast('FAQ er lagra og publisert'); })
+            .catch(function (e) { toast(e.message, true); });
+        });
+      }
+      function sync() { collect(root, faq); }
+      render();
+    });
+  };
 
   /* ---------------- Tekst og SEO ---------------- */
 
@@ -768,8 +941,10 @@
   /* ---------------- Innstillingar ---------------- */
 
   views.innstillingar = function () {
-    return api('/content/settings').then(function (res) {
-      var s = res.value;
+    return Promise.all([api('/content/settings'), api('/content/mailcfg'), api('/content/instagram')]).then(function (res) {
+      var s = res[0].value;
+      var mailcfg = res[1].value || { enabled: false, host: '', port: 587, user: '', pass: '', to: '' };
+      var insta = res[2].value || { enabled: false, posts: [] };
 
       function render() {
         root.innerHTML =
@@ -815,6 +990,26 @@
           }).join('') +
           '</div><button class="btn btn-ghost btn-sm" id="btnNyHour">+ Legg til linje</button></div>' +
 
+          '<div class="panel"><h2>📧 E-postvarsling</h2>' +
+          '<p class="muted small">Få e-post når nokon melder seg på kurs, bestiller opplæring/gåvekort eller sender melding – og send automatisk stadfesting til den som melder seg på. Bruk SMTP-opplysningane frå e-postleverandøren dykkar (for Gmail/Google Workspace: smtp.gmail.com, port 587, og eit <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">app-passord</a>).</p>' +
+          '<div class="check-row"><input type="checkbox" id="mailEnabled" data-mail="enabled"' + (mailcfg.enabled ? ' checked' : '') + '><label for="mailEnabled">Slå på e-postvarsling</label></div>' +
+          '<div class="grid-2">' +
+          '<label>SMTP-server<input data-mail="host" value="' + esc(mailcfg.host) + '" placeholder="t.d. smtp.gmail.com"></label>' +
+          '<label>Port<input type="number" data-mail="port" value="' + esc(mailcfg.port || 587) + '"></label>' +
+          '<label>Brukarnamn (e-postadressa)<input data-mail="user" value="' + esc(mailcfg.user) + '" autocomplete="off"></label>' +
+          '<label>Passord / app-passord<input type="password" data-mail="pass" value="' + esc(mailcfg.pass) + '" autocomplete="new-password"></label>' +
+          '<label>Send varsel til (mottakar)<input data-mail="to" value="' + esc(mailcfg.to) + '" placeholder="post@nordfjordtrafikk.no"></label>' +
+          '</div>' +
+          '<button class="btn btn-primary" id="btnLagreMail">Lagre e-postoppsett</button> ' +
+          '<button class="btn btn-ghost" id="btnTestMail">Send testmelding</button>' +
+          '<p class="muted small" style="margin-top:.6rem">Passordet blir lagra i databasen til nettsida. Bruk eit app-passord (ikkje hovudpassordet til e-postkontoen), så kan det enkelt bytast ut.</p></div>' +
+
+          '<div class="panel"><h2>📸 Instagram på nettsida</h2>' +
+          '<p class="muted small">Lim inn lenkjer til Instagram-innlegg (éi per linje), så blir dei viste nedst på <a href="/aktuelt" target="_blank" rel="noopener">Aktuelt-sida</a>. Opne innlegget på Instagram → del → «Kopier lenke». Innlegga blir først lasta etter at besøkande har samtykt til tredjeparts-innhald.</p>' +
+          '<div class="check-row"><input type="checkbox" id="instaEnabled"' + (insta.enabled ? ' checked' : '') + '><label for="instaEnabled">Vis Instagram-innlegg på Aktuelt-sida</label></div>' +
+          '<label>Innleggslenkjer (éi per linje)<textarea id="instaPosts" rows="4" placeholder="https://www.instagram.com/p/XXXXXXXXX/">' + esc((insta.posts || []).join('\n')) + '</textarea></label>' +
+          '<button class="btn btn-primary" id="btnLagreInsta">Lagre Instagram-oppsett</button></div>' +
+
           '<div class="panel"><h2>🔐 Byt passord</h2><div class="grid-2">' +
           '<label>Noverande passord<input type="password" id="pwCurrent" autocomplete="current-password"></label>' +
           '<label>Nytt passord (minst 10 teikn)<input type="password" id="pwNext" autocomplete="new-password"></label>' +
@@ -829,6 +1024,39 @@
           collect(root, s);
           api('/content/settings', { method: 'PUT', body: { value: s } })
             .then(function () { toast('Innstillingane er lagra og publiserte'); })
+            .catch(function (e) { toast(e.message, true); });
+        });
+
+        function collectMail() {
+          root.querySelectorAll('[data-mail]').forEach(function (el) {
+            mailcfg[el.dataset.mail] = el.type === 'checkbox' ? el.checked : el.value.trim();
+          });
+          mailcfg.port = Number(mailcfg.port || 587);
+        }
+        function saveMail() {
+          collectMail();
+          return api('/content/mailcfg', { method: 'PUT', body: { value: mailcfg } });
+        }
+        document.getElementById('btnLagreMail').addEventListener('click', function () {
+          saveMail().then(function () { toast('E-postoppsettet er lagra'); })
+            .catch(function (e) { toast(e.message, true); });
+        });
+        document.getElementById('btnTestMail').addEventListener('click', function () {
+          var btn = this;
+          btn.disabled = true;
+          saveMail()
+            .then(function () { return api('/mailtest', { method: 'POST', body: {} }); })
+            .then(function (r) { toast('Testmelding send til ' + r.to + ' ✓'); })
+            .catch(function (e) { toast('Test feila: ' + e.message, true); })
+            .finally(function () { btn.disabled = false; });
+        });
+        document.getElementById('btnLagreInsta').addEventListener('click', function () {
+          insta.enabled = document.getElementById('instaEnabled').checked;
+          insta.posts = document.getElementById('instaPosts').value.split('\n')
+            .map(function (l) { return l.trim(); })
+            .filter(function (l) { return /^https:\/\/(www\.)?instagram\.com\//.test(l); });
+          api('/content/instagram', { method: 'PUT', body: { value: insta } })
+            .then(function () { toast('Instagram-oppsettet er lagra (' + insta.posts.length + ' innlegg)'); })
             .catch(function (e) { toast(e.message, true); });
         });
         root.querySelectorAll('[data-locdel]').forEach(function (b) {

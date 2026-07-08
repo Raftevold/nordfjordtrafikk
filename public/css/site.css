@@ -115,12 +115,12 @@ a.alert-bar:hover { background: #ffd35a; color: #241A00; }
 .main-nav { display: flex; align-items: center; gap: 1.2rem; }
 .main-nav ul { display: flex; gap: .2rem; list-style: none; margin: 0; padding: 0; }
 .main-nav a:not(.btn) {
-  display: block; padding: .5rem .75rem; border-radius: 8px;
-  color: var(--ink); text-decoration: none; font-weight: 600; font-size: .97rem;
-  position: relative;
+  display: block; padding: .5rem .6rem; border-radius: 8px;
+  color: var(--ink); text-decoration: none; font-weight: 600; font-size: .94rem;
+  position: relative; white-space: nowrap;
 }
 .main-nav a:not(.btn)::after {
-  content: ''; position: absolute; left: .75rem; right: .75rem; bottom: .2rem; height: 3px;
+  content: ''; position: absolute; left: .6rem; right: .6rem; bottom: .2rem; height: 3px;
   background: var(--red); border-radius: 2px;
   transform: scaleX(0); transform-origin: left; transition: transform .22s var(--ease);
 }
@@ -480,6 +480,49 @@ a.alert-bar:hover { background: #ffd35a; color: #241A00; }
 .vehicle-body h2 { margin: 0 0 .3rem; font-size: 1.15rem; }
 .vehicle-body p { margin: 0; color: var(--ink-soft); font-size: .95rem; }
 
+/* ---------- FAQ ---------- */
+.faq-list { display: grid; gap: .8rem; }
+.faq-item {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; transition: box-shadow .2s var(--ease);
+}
+.faq-item[open] { box-shadow: var(--shadow); border-color: #D5D9E0; }
+.faq-item summary {
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: 1.1rem 1.3rem; cursor: pointer; font-weight: 700; font-size: 1.05rem;
+  list-style: none;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary:hover { color: var(--red); }
+.faq-chevron { flex: none; color: var(--red); transition: transform .25s var(--ease); }
+.faq-item[open] .faq-chevron { transform: rotate(180deg); }
+.faq-answer { padding: 0 1.3rem 1.2rem; color: var(--ink-soft); }
+.faq-answer p { margin: 0 0 .7rem; }
+.faq-answer p:last-child { margin-bottom: 0; }
+
+/* ---------- Aktuelt ---------- */
+.news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.3rem; }
+.news-grid-2 { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+.news-card {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+.news-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
+.news-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #E9EBEF; }
+.news-body { padding: 1.2rem 1.3rem 1.4rem; display: flex; flex-direction: column; gap: .35rem; flex: 1; }
+.news-date { margin: 0; font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-soft); }
+.news-body h2, .news-body h3 { margin: 0; font-size: 1.2rem; }
+.news-body h2 a, .news-body h3 a { color: var(--ink); text-decoration: none; }
+.news-body h2 a:hover, .news-body h3 a:hover { color: var(--red); }
+.news-excerpt { margin: 0; color: var(--ink-soft); font-size: .95rem; }
+.news-more { margin-top: auto; padding-top: .5rem; font-weight: 700; text-decoration: none; }
+
+/* ---------- Instagram ---------- */
+.insta-section { margin-top: clamp(2.5rem, 6vw, 4rem); }
+.insta-grid { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+.insta-grid .instagram-media { min-width: 300px !important; max-width: 380px !important; flex: 1 1 320px; margin: 0 !important; }
+
 /* ---------- Kontakt ---------- */
 .map-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .8rem; }
 .contact-cards { list-style: none; margin: 0; padding: 0; display: grid; gap: .8rem; }
@@ -576,7 +619,7 @@ a.alert-bar:hover { background: #ffd35a; color: #241A00; }
 html.no-io .reveal, html.no-js .reveal { opacity: 1; transform: none; }
 
 /* ---------- Responsivt ---------- */
-@media (max-width: 960px) {
+@media (max-width: 1080px) {
   /* backdrop-filter lagar containing block for fixed-posisjonerte barn – må av på mobil */
   .site-header { backdrop-filter: none; background: #fff; }
   .main-nav {
@@ -594,7 +637,8 @@ html.no-io .reveal, html.no-js .reveal { opacity: 1; transform: none; }
   body.nav-open { overflow: hidden; }
   body.nav-open .nav-toggle { border-color: rgba(255,255,255,.4); }
   body.nav-open .nav-toggle span { background: #fff; }
-
+}
+@media (max-width: 960px) {
   .form-layout { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .mobile-bar { display: flex; }

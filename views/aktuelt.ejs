@@ -1,0 +1,60 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="hero-kicker reveal">Nytt frå trafikkskulen</p>
+    <h1 class="page-title reveal">Aktuelt</h1>
+  </div>
+  <div class="page-hero-road" aria-hidden="true"></div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <% if (!posts.length) { %>
+      <div class="empty-state reveal">
+        <p>Ingen nyheiter enno – følg med, her kjem det meldingar om nye kurs og anna som skjer hos oss!</p>
+        <div class="empty-actions">
+          <a class="btn btn-primary" href="/kurs">Sjå kurskalenderen</a>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="news-grid">
+        <% posts.forEach(function(p, i) { %>
+          <article class="news-card reveal" style="--d:<%= (i % 3) * 0.1 %>s">
+            <% if (p.image) { %><a href="/aktuelt/<%= p.id %>" tabindex="-1" aria-hidden="true"><img src="<%= p.image %>" alt="" width="480" height="270" loading="lazy"></a><% } %>
+            <div class="news-body">
+              <p class="news-date"><%= fmtPostDate(p.created_at) %></p>
+              <h2><a href="/aktuelt/<%= p.id %>"><%= p.title %></a></h2>
+              <p class="news-excerpt"><%= String(p.body).replace(/\s+/g, ' ').slice(0, 140) %><%= p.body.length > 140 ? ' …' : '' %></p>
+              <a class="news-more" href="/aktuelt/<%= p.id %>">Les meir →</a>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <% if (instagram.enabled && instagram.posts.length) { %>
+      <div class="insta-section reveal" id="instagram">
+        <h2 class="section-title">Følg oss på Instagram</h2>
+        <div class="insta-slot" data-instagram>
+          <div class="map-placeholder">
+            <p>Instagram-innlegga blir først lasta når du samtykker til tredjeparts-innhald.</p>
+            <button class="btn btn-primary" type="button" data-instagram-load>Vis Instagram-innlegg</button>
+            <p class="muted small">Ved å vise innlegga godtek du <a href="https://privacycenter.instagram.com/policy" target="_blank" rel="noopener">Instagram/Meta sin personvernpraksis</a>.</p>
+          </div>
+        </div>
+        <template data-instagram-posts>
+          <div class="insta-grid">
+            <% instagram.posts.forEach(function(url) { %>
+              <blockquote class="instagram-media" data-instgrm-permalink="<%= url %>" data-instgrm-version="14"><a href="<%= url %>">Sjå innlegget på Instagram</a></blockquote>
+            <% }) %>
+          </div>
+        </template>
+        <p class="center" style="margin-top:1.2rem"><a class="btn btn-ghost" href="<%= settings.social.instagram %>" target="_blank" rel="noopener">@nordfjordtrafikk på Instagram ↗</a></p>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

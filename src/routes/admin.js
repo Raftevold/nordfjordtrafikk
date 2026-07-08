@@ -3,6 +3,7 @@ const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const db = require('../db');
+const mail = require('../mail');
 const seedContent = require('../seed-content');
 
 const router = express.Router();
@@ -87,7 +88,7 @@ router.get('/api/overview', async (req, res) => {
 
 // ---------- Innhald (JSON-dokument) ----------
 
-const EDITABLE_KEYS = ['settings', 'seo', 'pages', 'prices', 'team', 'classes', 'courseTypes', 'vehicles'];
+const EDITABLE_KEYS = ['settings', 'seo', 'pages', 'prices', 'team', 'classes', 'courseTypes', 'vehicles', 'faq', 'instagram', 'mailcfg'];
 
 router.get('/api/content/:key', async (req, res) => {
   const { key } = req.params;
@@ -179,6 +180,90 @@ router.delete('/api/:kind(signups|requests|giftcards|messages)/:id(\\d+)', async
   res.json({ ok: true });
 });
 
+// ---------- Aktuelt ----------
+
+router.get('/api/posts', async (req, res) => {
+  res.json({ ok: true, posts: await db.listPosts(true) });
+});
+
+router.post('/api/posts', async (req, res) => {
+  const p = req.body;
+  if (!p.title) return res.status(400).json({ ok: false, error: 'Tittel må fyllast ut.' });
+  const id = await db.createPost(p);
+  res.json({ ok: true, id });
+});
+
+router.put('/api/posts/:id(\\d+)', async (req, res) => {
+  await db.updatePost(Number(req.params.id), req.body);
+  res.json({ ok: true });
+});
+
+router.delete('/api/posts/:id(\\d+)', async (req, res) => {
+  await db.deletePost(Number(req.params.id));
+  res.json({ ok: true });
+});
+
+// ---------- Statistikk ----------
+
+router.get('/api/stats', async (req, res) => {
+  const [signups, requests, courses] = await Promise.all([db.listSignups(), db.listRequests(), db.listCourses(true)]);
+  const ym = (iso) => String(iso).slice(0, 7);
+
+  // Siste 12 månader
+  const months = [];
+  const d = new Date();
+  d.setDate(1);
+  for (let i = 11; i >= 0; i--) {
+    const m = new Date(d.getFullYear(), d.getMonth() - i, 1);
+    months.push(`${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}`);
+  }
+  const perMonth = months.map((m) => ({
+    month: m,
+    signups: signups.filter((s) => ym(s.created_at) === m).length,
+    requests: requests.filter((s) => ym(s.created_at) === m).length
+  }));
+
+  // Fyllingsgrad per kurs (berre kurs med kapasitet)
+  const activeSignups = signups.filter((s) => s.status !== 'avmeldt');
+  const countFor = (id) => activeSignups.filter((s) => s.course_id === id).length;
+  const capCourses = courses.filter((c) => c.capacity > 0).map((c) => ({
+    id: c.id, title: c.title, type: c.type, location: c.location, starts_at: c.starts_at,
+    capacity: c.capacity, taken: countFor(c.id),
+    pct: Math.min(100, Math.round(countFor(c.id) / c.capacity * 100))
+  }));
+
+  const groupAvg = (key) => {
+    const groups = {};
+    for (const c of capCourses) {
+      const k = c[key] || '(utan)';
+      (groups[k] = groups[k] || []).push(c.pct);
+    }
+    return Object.entries(groups).map(([name, arr]) => ({
+      name, courses: arr.length, avgPct: Math.round(arr.reduce((a, b) => a + b, 0) / arr.length)
+    })).sort((a, b) => b.avgPct - a.avgPct);
+  };
+
+  res.json({
+    ok: true,
+    perMonth,
+    courses: capCourses.sort((a, b) => String(b.starts_at).localeCompare(String(a.starts_at))).slice(0, 20),
+    byType: groupAvg('type'),
+    byLocation: groupAvg('location'),
+    totals: { courses: courses.length, signups: signups.length, requests: requests.length }
+  });
+});
+
+// ---------- E-posttest ----------
+
+router.post('/api/mailtest', async (req, res) => {
+  try {
+    const to = await mail.sendTest();
+    res.json({ ok: true, to });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
 // ---------- Bilete ----------
 
 router.get('/api/images', async (req, res) => {
@@ -211,7 +296,7 @@ router.delete('/api/images/:id(\\d+)', async (req, res) => {
 // ---------- Sikkerheitskopi ----------
 
 router.get('/api/backup', async (req, res) => {
-  const dump = { exported_at: new Date().toISOString(), content: {}, courses: await db.listCourses(true), signups: await db.listSignups(), requests: await db.listRequests(), giftcards: await db.listGiftcards(), messages: await db.listMessages() };
+  const dump = { exported_at: new Date().toISOString(), content: {}, courses: await db.listCourses(true), signups: await db.listSignups(), requests: await db.listRequests(), giftcards: await db.listGiftcards(), messages: await db.listMessages(), posts: await db.listPosts(true) };
   for (const key of EDITABLE_KEYS) dump.content[key] = await db.getDoc(key, seedContent[key]);
   res.setHeader('Content-Disposition', `attachment; filename="nordfjordtrafikk-backup-${dump.exported_at.slice(0, 10)}.json"`);
   res.json(dump);

@@ -134,7 +134,7 @@
       btn.addEventListener('click', function () {
         setConsent(btn.dataset.consent);
         banner.hidden = true;
-        if (btn.dataset.consent === 'all') loadMaps();
+        if (btn.dataset.consent === 'all') { loadMaps(); loadInstagram(); }
       });
     });
   }
@@ -175,4 +175,26 @@
     });
   });
   if (getConsent() === 'all') loadMaps();
+
+  /* ---------- Instagram-innlegg med samtykke ---------- */
+  function loadInstagram() {
+    var slot = document.querySelector('[data-instagram]');
+    var tpl = document.querySelector('template[data-instagram-posts]');
+    if (!slot || !tpl || slot.dataset.loaded) return;
+    slot.dataset.loaded = '1';
+    slot.innerHTML = '';
+    slot.appendChild(tpl.content.cloneNode(true));
+    if (window.instgrm && window.instgrm.Embeds) {
+      window.instgrm.Embeds.process();
+    } else {
+      var s = document.createElement('script');
+      s.src = 'https://www.instagram.com/embed.js';
+      s.async = true;
+      document.body.appendChild(s);
+    }
+  }
+  document.querySelectorAll('[data-instagram-load]').forEach(function (btn) {
+    btn.addEventListener('click', loadInstagram);
+  });
+  if (getConsent() === 'all') loadInstagram();
 })();

@@ -32,6 +32,8 @@ module.exports = {
     pamelding: { title: 'Påmelding til opplæring – Nordfjord Trafikk', description: 'Meld deg på trafikkopplæring hos Nordfjord Trafikk. Fyll ut skjemaet, så tek vi kontakt og lagar eit opplegg tilpassa deg.' },
     gavekort: { title: 'Gåvekort på trafikkopplæring – Nordfjord Trafikk', description: 'Gje vekk lappen! Bestill gåvekort på trafikkopplæring som kan brukast til alle lette førarkortklassar, trafikalt grunnkurs og mørkekøyring.' },
     kjoretoy: { title: 'Skulebilane våre – Nordfjord Trafikk', description: 'Sjå kjøretøya du øver i hos Nordfjord Trafikk: Audi A3, Audi Q3, VW Golf og Tesla Model Y – pluss motorsyklar og mopedar.' },
+    faq: { title: 'Ofte stilte spørsmål – Nordfjord Trafikk', description: 'Svar på det folk lurer mest på: alder for øvingskjøring, trafikalt grunnkurs, kor mange kjøretimar du treng og korleis du melder deg på.' },
+    aktuelt: { title: 'Aktuelt – Nordfjord Trafikk', description: 'Nyheiter og meldingar frå Nordfjord Trafikk: nye kurs, opningstider og anna som skjer på trafikkskulen.' },
     kontakt: { title: 'Kontakt oss – Nordfjord Trafikk', description: 'Kontakt Nordfjord Trafikk på Nordfjordeid, i Stryn eller Stranda/Sykkylven. Ring, send e-post eller bruk kontaktskjemaet.' },
     personvern: { title: 'Personvernerklæring – Nordfjord Trafikk', description: 'Slik behandlar Nordfjord Trafikk personopplysningane dine.' }
   },
@@ -211,5 +213,21 @@ module.exports = {
     { code: 'T', label: 'Klasse T – Traktor', icon: 'tractor' }
   ],
 
-  courseTypes: ['Trafikalt grunnkurs', 'Trafikant i mørket', 'Førstehjelpskurs', 'Grunnkurs MC', 'Grunnkurs klasse S', 'Lastsikringskurs', 'Anna kurs']
+  courseTypes: ['Trafikalt grunnkurs', 'Trafikant i mørket', 'Førstehjelpskurs', 'Grunnkurs MC', 'Grunnkurs klasse S', 'Lastsikringskurs', 'Anna kurs'],
+
+  // Ofte stilte spørsmål. Generelle svar etter norsk føraropplæring – redigerast i admin.
+  faq: [
+    { q: 'Kor gammal må eg vere for å byrje?', a: 'Du kan ta trafikalt grunnkurs frå du er 15 år. Øvingskjøring med personbil (klasse B) kan du starte med når du er 16 år, og førarprøva kan du ta frå du er 18 år. For moped er aldersgrensa 16 år, og for lett motorsykkel (A1) 16 år.' },
+    { q: 'Må eg ha trafikalt grunnkurs før eg kan øvingskjøre?', a: 'Ja – er du under 25 år, må du ha fullført trafikalt grunnkurs før du kan øvingskjøre, både privat og med trafikkskule. Er du over 25 år, slepp du sjølve grunnkurset, men delane om mørkekøyring og førstehjelp må vere på plass før du kan gå opp til førarprøva.' },
+    { q: 'Kor mange kjøretimar treng eg?', a: 'Det er heilt individuelt. Nokre delar av opplæringa er obligatoriske (sjå trinn 1–4 under «Opplæringa»), men kor mange vanlege kjøretimar du treng, avheng av kor mykje du øvingskjører heime og kor fort du lærer. Vi anbefalar å starte tidleg – då kan vi gje deg tilbakemelding på kva du bør øve på heime, og du treng ofte færre timar totalt.' },
+    { q: 'Kva er ei trinnvurdering?', a: 'Trinnvurdering er ein obligatorisk kjøretime på slutten av trinn 2 og trinn 3, der du og læraren vurderer om du har nådd måla for trinnet og er klar til å gå vidare.' },
+    { q: 'Korleis melder eg meg på?', a: 'Du kan melde deg på kurs direkte i kurskalenderen vår, sende inn skjemaet under «Påmelding til opplæring» – eller rett og slett ringe avdelinga di. Vi tek kontakt og lagar eit opplegg som passar deg.' },
+    { q: 'Kan eg gje vekk køyretimar i gåve?', a: 'Ja! Vi sel gåvekort på trafikkopplæring som kan brukast til alle lette førarkortklassar, trafikalt grunnkurs og mørkekøyring. Bestill under «Gåvekort», så sender vi gåvekortet og betalingsinformasjon per e-post.' }
+  ],
+
+  // Instagram-innbygging: lim inn lenkjer til enkeltinnlegg i admin
+  instagram: { enabled: false, posts: [] },
+
+  // E-postvarsling (SMTP) – fyllast ut i admin → Innstillingar. Miljøvariablar overstyrer.
+  mailcfg: { enabled: false, host: '', port: 587, user: '', pass: '', to: '' }
 };

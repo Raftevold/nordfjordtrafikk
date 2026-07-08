@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS requests (id {ID}, name TEXT NOT NULL, birthdate TEXT
 CREATE TABLE IF NOT EXISTS giftcards (id {ID}, buyer_name TEXT NOT NULL, buyer_email TEXT NOT NULL DEFAULT '', buyer_phone TEXT NOT NULL DEFAULT '', value TEXT NOT NULL DEFAULT '', recipient TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'ny', created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS messages (id {ID}, name TEXT NOT NULL, email TEXT NOT NULL DEFAULT '', phone TEXT NOT NULL DEFAULT '', subject TEXT NOT NULL DEFAULT '', body TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'ny', created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS admins (id {ID}, username TEXT UNIQUE NOT NULL, pass_hash TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS posts (id {ID}, title TEXT NOT NULL, body TEXT NOT NULL DEFAULT '', image TEXT NOT NULL DEFAULT '', visible INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL);
 `;
 
 let driver;
@@ -183,6 +184,18 @@ const db = {
   listMessages: () => driver.all('SELECT * FROM messages ORDER BY created_at DESC'),
   updateMessageStatus: (id, status) => driver.run('UPDATE messages SET status = ? WHERE id = ?', [status, id]),
   deleteMessage: (id) => driver.run('DELETE FROM messages WHERE id = ?', [id]),
+
+  // --- Aktuelt (nyheiter) ---
+  listPosts: (all = false) => driver.all(`SELECT * FROM posts ${all ? '' : 'WHERE visible = 1'} ORDER BY created_at DESC`),
+  getPost: (id) => driver.get('SELECT * FROM posts WHERE id = ?', [id]),
+  async createPost(p) {
+    const r = await driver.run('INSERT INTO posts (title, body, image, visible, created_at) VALUES (?,?,?,?,?)',
+      [p.title, p.body || '', p.image || '', p.visible ? 1 : 0, now()]);
+    return r.lastID;
+  },
+  updatePost: (id, p) => driver.run('UPDATE posts SET title=?, body=?, image=?, visible=? WHERE id=?',
+    [p.title, p.body || '', p.image || '', p.visible ? 1 : 0, id]),
+  deletePost: (id) => driver.run('DELETE FROM posts WHERE id = ?', [id]),
 
   // --- Admin-brukarar ---
   getAdmin: (username) => driver.get('SELECT * FROM admins WHERE username = ?', [username]),
