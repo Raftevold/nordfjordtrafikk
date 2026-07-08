@@ -94,25 +94,31 @@ function courseToVevent(c, host) {
     'END:VEVENT'
   ].join('\r\n');
 
-  // Dagsplan: éi tidfesta hending per kursdag (taklar ulike klokkeslett og hopp over dagar)
-  if (sessions.length) {
-    return sessions.map((s, i) =>
+  const startTime = String(c.starts_at).slice(11, 16) || '12:00';
+  const startDay = String(c.starts_at).slice(0, 10);
+
+  // Fleirdagskurs utan lagra dagsplan: lag ei rekkje med same klokkeslett kvar dag,
+  // slik at kalenderen alltid viser tidfesta blokker i rutenettet (aldri banner-stripe)
+  let days = sessions;
+  if (!days.length && c.ends_at && c.ends_at.slice(0, 10) > startDay) {
+    days = [];
+    const d = new Date(startDay + 'T12:00');
+    const end = new Date(c.ends_at.slice(0, 10) + 'T12:00');
+    while (d <= end && days.length < 60) {
+      days.push({ date: d.toISOString().slice(0, 10), start: startTime, end: plus2h(startTime) });
+      d.setDate(d.getDate() + 1);
+    }
+  }
+
+  // Éi tidfesta hending per kursdag (taklar ulike klokkeslett og hopp over dagar)
+  if (days.length) {
+    return days.map((s, i) =>
       vevent(`kurs-${c.id}-${i + 1}`, `${s.date}T${s.start}`, `${s.date}T${s.end || plus2h(s.start)}`)
     ).join('\r\n');
   }
 
-  const startTime = String(c.starts_at).slice(11, 16) || '12:00';
-  const endTime = plus2h(startTime);
-  const startDay = String(c.starts_at).slice(0, 10);
-
-  // Fleirdagskurs utan dagsplan: gjentakande hending med same klokkeslett kvar dag
-  if (c.ends_at && c.ends_at.slice(0, 10) > startDay) {
-    return vevent(`kurs-${c.id}`, c.starts_at, `${startDay}T${endTime}`,
-      [`RRULE:FREQ=DAILY;UNTIL=${c.ends_at.slice(0, 10).replaceAll('-', '')}T235959`]);
-  }
-
   // Eindagskurs
-  return vevent(`kurs-${c.id}`, c.starts_at, `${startDay}T${endTime}`);
+  return vevent(`kurs-${c.id}`, c.starts_at, `${startDay}T${plus2h(startTime)}`);
 }
 
 function icsWrap(events) {
