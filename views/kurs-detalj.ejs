@@ -19,7 +19,7 @@
       <div class="fact-tiles">
         <div class="fact-tile">
           <span class="fact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 16H5V10h14ZM5 8V6h14v2Z"/></svg></span>
-          <div><span class="fact-label">Dato og tid</span><strong class="fact-value"><%= fmtDateRange(course.starts_at, course.ends_at) %></strong></div>
+          <div><span class="fact-label"><%= sessions.length ? 'Dato' : 'Dato og tid' %></span><strong class="fact-value"><% if (sessions.length) { %><%= fmtDateRangeCompact(course.starts_at, course.ends_at) %><% } else { %><%= fmtDateRange(course.starts_at, course.ends_at) %><% } %></strong></div>
         </div>
         <% if (course.duration) { %>
         <div class="fact-tile">

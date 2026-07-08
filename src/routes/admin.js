@@ -111,15 +111,26 @@ router.get('/api/courses', async (req, res) => {
   res.json({ ok: true, courses: out });
 });
 
+// Med dagsplan er kursdagane fasiten: synk start-/sluttdato så visninga aldri sprikjer
+function normalizeCourse(c) {
+  if (Array.isArray(c.sessions) && c.sessions.length) {
+    const sorted = [...c.sessions].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    c.sessions = sorted;
+    c.starts_at = `${sorted[0].date}T${sorted[0].start || '12:00'}`;
+    c.ends_at = sorted[sorted.length - 1].date;
+  }
+  return c;
+}
+
 router.post('/api/courses', async (req, res) => {
-  const c = req.body;
+  const c = normalizeCourse(req.body);
   if (!c.title || !c.location || !c.starts_at) return res.status(400).json({ ok: false, error: 'Tittel, avdeling og dato er påkravd.' });
   const id = await db.createCourse(c);
   res.json({ ok: true, id });
 });
 
 router.put('/api/courses/:id(\\d+)', async (req, res) => {
-  await db.updateCourse(Number(req.params.id), req.body);
+  await db.updateCourse(Number(req.params.id), normalizeCourse(req.body));
   res.json({ ok: true });
 });
 

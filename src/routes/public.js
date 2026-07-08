@@ -60,6 +60,19 @@ const parseSessions = (c) => {
   } catch { return []; }
 };
 
+// Kompakt datospenn utan klokkeslett: «13.–15. juli 2026» / «30. juni – 2. juli 2026»
+function fmtDateRangeCompact(startIso, endIso) {
+  try {
+    const s = new Date(String(startIso).slice(0, 10) + 'T12:00');
+    const e = new Date(String(endIso || startIso).slice(0, 10) + 'T12:00');
+    if (s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()) {
+      if (s.getDate() === e.getDate()) return s.toLocaleDateString('nn-NO', { day: 'numeric', month: 'long', year: 'numeric' });
+      return `${s.getDate()}.–${e.toLocaleDateString('nn-NO', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+    }
+    return `${s.toLocaleDateString('nn-NO', { day: 'numeric', month: 'long' })} – ${e.toLocaleDateString('nn-NO', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+  } catch { return String(startIso).slice(0, 10); }
+}
+
 // «måndag 20. juli kl. 16:00–18:00»
 function fmtSession(s) {
   try {
@@ -185,7 +198,7 @@ router.get('/kurs/:id(\\d+)', async (req, res, next) => {
   res.render('kurs-detalj', {
     ...data,
     seo: { title: `${course.title} (${course.location}) – Nordfjord Trafikk`, description: `Meld deg på ${course.title} hos Nordfjord Trafikk, avdeling ${course.location}.` },
-    course, taken, instructors: parseInstructors(course), sessions: parseSessions(course), fmtSession, fmtDate, fmtDateRange, path: '/kurs'
+    course, taken, instructors: parseInstructors(course), sessions: parseSessions(course), fmtSession, fmtDate, fmtDateRange, fmtDateRangeCompact, path: '/kurs'
   });
 });
 
