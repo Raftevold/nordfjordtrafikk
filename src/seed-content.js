@@ -18,7 +18,7 @@ module.exports = {
       instagram: 'https://instagram.com/nordfjordtrafikk'
     },
     hours: [
-      { label: 'Måndag–fredag', value: '08.00–16.00 (PLACEHOLDER – rett i admin)' }
+      { label: 'Ikkje lagt inn enno', value: 'fyll inn i admin → Innstillingar' }
     ],
     alert: { enabled: false, text: '', link: '' }
   },
